@@ -9,8 +9,12 @@ public class chatBox {
 	private TextField input = new TextField();
 	private TextArea output = new TextArea();
 	private static int count=0;
+	private String name;
+	
+	private ClientObserver ID;
 	
 	private int chatWidth = 300;
+	
 	
 	
 	public TextField getInput(){
@@ -21,7 +25,9 @@ public class chatBox {
 		return output;
 	}
 	
-	public chatBox(int y){
+	public chatBox(/*ClientObserver ID*/){
+		
+		this.ID = ID;
 		
 		// Input Text
 		input.setMaxHeight(30);

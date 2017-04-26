@@ -14,7 +14,7 @@ import java.util.Observer;
 public class ServerMain extends Observable {
 
 	public static void main(String[] args) {
-		
+
 		try {
 			new ServerMain().init();
 
@@ -23,37 +23,31 @@ public class ServerMain extends Observable {
 		}
 
 	}
-	
-	private void init() throws Exception{
+
+	private void init() throws Exception {
 		ServerSocket serverSock = new ServerSocket(4242);
 
-		while(true){
+		while (true) {
 			Socket clientSocket = serverSock.accept();
 			ClientObserver writer = new ClientObserver(clientSocket.getOutputStream());
-			
-			
+
 			Thread t = new Thread(new ClientHandler(clientSocket));
 			t.start();
 			this.addObserver(writer);
 			System.out.println("Got a connection");
 		}
-		
-		
-	}
-	
-	class ClientHandler implements Runnable{
-		//private BufferedReader reader;
-		private ObjectInputStream inputFromClient;
-		
 
+	}
+
+	class ClientHandler implements Runnable {
+		private ObjectInputStream inputFromClient;
 
 		public ClientHandler(Socket clientSocket) {
 			Socket sock = clientSocket;
 
 			try {
-				//reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 				inputFromClient = new ObjectInputStream(clientSocket.getInputStream());
-			
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -62,47 +56,38 @@ public class ServerMain extends Observable {
 		@Override
 		public void run() {
 			String message = "";
-			
-			try{
-				
-				
-				//Object object = inputFromClient.readObject();
+
+			try {
+
 				Object object;
-				
-				while(true){
+
+				while (true) {
 					object = inputFromClient.readObject();
-					if(object != null){
-						if(object instanceof ArrayList){
+					if (object != null) {
+						
+						// Just a test
+						if (object instanceof ArrayList) {
 							ArrayList a = (ArrayList<Integer>) object;
 							System.out.println(a.get(0));
 						}
-						
-						if(object instanceof String){
+
+						// If object is a string
+						if (object instanceof String) {
 							System.out.println("server read " + (String) object);
 							setChanged();
-							//notifyObservers((String) object);
 							notifyObservers(object);
-							//Observer.update();		// to notify a single observer
-							
+							// Observer.update(obj); // to notify a single observer
+
 						}
 					}
-					
+
 				}
-				
-				
-				/*while((message = reader.readLine()) != null){
-					System.out.println("server read " + message);
-					setChanged();
-					notifyObservers(message);
-				}*/
-			} catch(Exception e ){
+
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
-	
-	
-	
 
 }
