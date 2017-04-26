@@ -12,6 +12,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class ServerMain extends Observable {
+	
+	
+	
 
 	public static void main(String[] args) {
 
@@ -38,6 +41,9 @@ public class ServerMain extends Observable {
 		}
 
 	}
+	
+	
+
 
 	class ClientHandler implements Runnable {
 		private ObjectInputStream inputFromClient;
@@ -65,13 +71,43 @@ public class ServerMain extends Observable {
 					object = inputFromClient.readObject();
 					if (object != null) {
 						
-						// Just a test
-						if (object instanceof ArrayList) {
-							ArrayList a = (ArrayList<Integer>) object;
-							System.out.println(a.get(0));
+						// USERINFO
+						if (object instanceof UserInfo) {
+							
+							// Check if username and password valid
+							if(((UserInfo) object).getName() == null){
+								
+								for(UserInfo ul : UserInfo.getUsers()){
+									if(ul.getUsername().equals(((UserInfo) object).getUsername())){
+										if(ul.getPassword().equals(((UserInfo) object).getPassword())){
+											setChanged();
+											ul.setFlag(true);
+											notifyObservers(ul);
+										}
+										else{
+											setChanged();
+											ul.setFlag(false);
+											notifyObservers(ul);
+										}
+										
+										
+									}
+								}
+								
+								setChanged();
+								Boolean b = false;
+								notifyObservers(b);
+								
+								
+								
+							}
+							else{
+								UserInfo.getUsers().add((UserInfo)object);
+							}
+							
 						}
 
-						// If object is a string
+						// STRING
 						if (object instanceof String) {
 							System.out.println("server read " + (String) object);
 							setChanged();

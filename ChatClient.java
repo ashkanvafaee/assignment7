@@ -27,9 +27,15 @@ public class ChatClient extends Application {
 
 	private TextArea output;
 	private TextField input;
+	
+	private boolean wait = false;
+	private boolean accountFound = false;
 
 	private ObjectInputStream fromServer;
 	private ObjectOutputStream toServer;
+	
+	private static String name;
+	private static UserInfo UI;
 
 	private int worldWidth = 1000;
 	private int worldHeight = 800;
@@ -62,7 +68,7 @@ public class ChatClient extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		setUpNetwork();
-
+		
 		primaryStage.setTitle("Chat Client");
 
 		Pane grid = new Pane();
@@ -76,6 +82,18 @@ public class ChatClient extends Application {
 		
 		
 		// Login Screen
+		Button submitNew = new Button("Submit");
+		Button submitOld = new Button("Submit");
+		Label nameLabel = new Label("Name:");
+		Label userNameLabel = new Label("Username:");
+		Label passwordLabel = new Label("Password:");
+		TextField name = new TextField();
+		TextField userName = new TextField();
+		TextField password = new TextField();
+
+		
+		
+		
 		Pane login = new Pane();
 		login.setStyle("-fx-background-color: white;");
 		Scene loginScene = new Scene(login, 350, 400);
@@ -99,43 +117,164 @@ public class ChatClient extends Application {
 		
 	
 		
-		// newUser Critter handler
+		// newUser handler
 		newUser.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent AE) {
 				login.getChildren().remove(oldUser);
-				newUser.setText("Submit");
-				newUser.setLayoutX(125);
-				newUser.setLayoutY(300);
+				login.getChildren().remove(newUser);
 				
-				Label nameLabel = new Label("Name:");
+				submitNew.setLayoutX(125);
+				submitNew.setLayoutY(300);
+				
 				nameLabel.setLayoutX(30);
 				nameLabel.setLayoutY(50);
 				
-				Label userNameLabel = new Label("Username:");
 				userNameLabel.setLayoutX(30);
 				userNameLabel.setLayoutY(100);
 				
-				Label passwordLabel = new Label("Password:");
 				passwordLabel.setLayoutX(30);
 				passwordLabel.setLayoutY(150);
 				
-				TextField name = new TextField();
-				name.setLayoutX(80);
+				name.setLayoutX(140);
 				name.setLayoutY(50);
 				
+				userName.setLayoutX(140);
+				userName.setLayoutY(100);
+				
+				password.setLayoutX(140);
+				password.setLayoutY(150);
 				
 				login.getChildren().add(nameLabel);
 				login.getChildren().add(userNameLabel);
 				login.getChildren().add(passwordLabel);
+				login.getChildren().add(name);
+				login.getChildren().add(userName);
+				login.getChildren().add(password);
+				login.getChildren().add(submitNew);
 				
-				
+	
 				
 			}
 			
 		});
 		
 		
+		// oldUser handler
+		oldUser.setOnAction(new EventHandler<ActionEvent>(){
+
+			@Override
+			public void handle(ActionEvent AE) {
+				login.getChildren().remove(newUser);
+				login.getChildren().remove(oldUser);
+				
+				submitOld.setLayoutX(125);
+				submitOld.setLayoutY(250);
+				
+				userNameLabel.setLayoutX(30);
+				userNameLabel.setLayoutY(100);
+
+				passwordLabel.setLayoutX(30);
+				passwordLabel.setLayoutY(150);
+
+				userName.setLayoutX(140);
+				userName.setLayoutY(100);
+
+				password.setLayoutX(140);
+				password.setLayoutY(150);
+
+				login.getChildren().add(userNameLabel);
+				login.getChildren().add(passwordLabel);
+				login.getChildren().add(userName);
+				login.getChildren().add(password);
+				login.getChildren().add(submitOld);
+
+			}
+
+		});
 		
+		// New user submit
+		submitNew.setOnAction(new EventHandler<ActionEvent>(){
+
+			
+			public void handle(ActionEvent arg0) {
+				
+				
+				
+				
+				
+				UserInfo ui = new UserInfo();
+				
+				ui.setName(name.getText());
+				ui.setUsername(userName.getText());
+				ui.setPassword(password.getText());
+
+				try {
+					toServer.writeObject(ui);
+				} catch (IOException e) {
+
+				}
+
+				ChatClient.name = name.getText();
+				ChatClient.UI = ui;
+				
+				loginStage.close();
+				primaryStage.show();
+				primaryStage.setTitle(ui.getName());
+				
+			}
+			
+		});
+		
+		
+		// Old user submit
+		submitOld.setOnAction(new EventHandler<ActionEvent>(){
+
+			
+			public void handle(ActionEvent arg0) {
+				UserInfo ui = new UserInfo();
+				ui.setUsername(userName.getText());
+				ui.setPassword(password.getText());
+				
+				
+				try {
+					toServer.writeObject(ui);
+
+				}
+				catch (Exception e) {
+				}
+				
+				// Wait until validation received from server
+				while(!wait){
+					
+				}
+				wait = false;
+				
+				if(accountFound){
+					loginStage.close();
+					primaryStage.show();
+					primaryStage.setTitle(UI.getName());
+					
+				}
+				
+				else{
+					
+					Alert a = new Alert(AlertType.ERROR);
+					a.setHeaderText("Invalid Input");
+					a.setResizable(true);
+					a.setContentText("Wrong username or password. Please try again.");
+					a.showAndWait();
+				}
+				
+				
+				
+				
+				
+
+				
+				
+			}
+			
+		});
 		
 		
 		
@@ -174,11 +313,31 @@ public class ChatClient extends Application {
 		scrollPane.setLayoutX(worldWidth - scrollPane.getMaxWidth());
 		grid.getChildren().add(scrollPane);
 
-		Button friend = new Button("Friend");
-		friend.setMinWidth(200);
-		friend.setMaxWidth(200);
+		Button addFriend = new Button("Add Friends");
+		addFriend.setMinWidth(198);
+		addFriend.setMaxWidth(198);
 
-		scrollGrid.add(friend, 0, 0);
+		scrollGrid.add(addFriend, 0, 0);
+		
+		
+		
+		addFriend.setOnAction(new EventHandler<ActionEvent>(){
+
+			
+			public void handle(ActionEvent arg0) {
+			
+				
+				
+			
+			
+			}
+			
+			
+			
+			});
+		
+		
+		
 
 	}
 
@@ -205,9 +364,40 @@ public class ChatClient extends Application {
 				while (true) {
 					object = fromServer.readObject();
 					if (object != null) {
+						
+						// STRING
 						if (object instanceof String) {
 							output.appendText((String) object + "\n");
 						}
+						
+						
+						// USERINFO
+						if(object instanceof UserInfo){
+							
+							// Username / Password Found
+							if(((UserInfo) object).isFlag()){
+								
+								UI = (UserInfo) object;
+								accountFound = true;
+								wait = true;
+				
+							}
+							
+							// Username / Password Failed
+							else{
+								
+								accountFound = false;
+								wait = true;
+								
+							}
+						}
+						
+						
+						
+						
+						
+						
+						
 
 					}
 
