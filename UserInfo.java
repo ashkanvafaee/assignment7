@@ -1,5 +1,7 @@
 package assignment7;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -8,13 +10,20 @@ public class UserInfo implements Serializable {
 	
 	private static ArrayList<UserInfo> users = new ArrayList<UserInfo>();
 	
-	private boolean flag = false;
+	private boolean flag = false;			// Used to determine if username/password found
+	private boolean getUsersFlag = false;	// Used to determine if server should return a list of users
 	private String name = null;
-	private Socket clientSocket;
 	private String username;
 	private String password;
+	private ObjectOutputStream toClient; 
 
 
+	public boolean isGetUsersFlag() {
+		return getUsersFlag;
+	}
+	public void setGetUsersFlag(boolean getUsersFlag) {
+		this.getUsersFlag = getUsersFlag;
+	}
 
 	public boolean isFlag() {
 		return flag;
@@ -35,11 +44,12 @@ public class UserInfo implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Socket getClientSocket() {
-		return clientSocket;
+
+	public ObjectOutputStream getToClient() {
+		return toClient;
 	}
-	public void setClientSocket(Socket clientSocket) {
-		this.clientSocket = clientSocket;
+	public void setToClient(ObjectOutputStream toClient) {
+		this.toClient = toClient;
 	}
 	public String getUsername() {
 		return username;

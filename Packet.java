@@ -1,17 +1,15 @@
 package assignment7;
 
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class Packet {
 
-	// Client ID
-	private ClientObserver ID;
-	
-	// Text that is being sent
+	private String name;
 	private String text;
 	
-	// IDs of all Clients that message should be sent to
-	ArrayList<ClientObserver> clientRecipients = new ArrayList<>();
+	// OutputStream of all Clients that message should be sent to
+	ArrayList<ObjectOutputStream> clientRecipients = new ArrayList<ObjectOutputStream>();
 	
 	
 	

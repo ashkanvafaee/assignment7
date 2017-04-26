@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -47,12 +48,14 @@ public class ServerMain extends Observable {
 
 	class ClientHandler implements Runnable {
 		private ObjectInputStream inputFromClient;
+		private ObjectOutputStream outputFromClient;
 
 		public ClientHandler(Socket clientSocket) {
 			Socket sock = clientSocket;
 
 			try {
 				inputFromClient = new ObjectInputStream(clientSocket.getInputStream());
+				outputFromClient = new ObjectOutputStream(clientSocket.getOutputStream());
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -68,6 +71,7 @@ public class ServerMain extends Observable {
 				Object object;
 
 				while (true) {
+					
 					object = inputFromClient.readObject();
 					if (object != null) {
 						
@@ -102,7 +106,10 @@ public class ServerMain extends Observable {
 								
 							}
 							else{
+								// Associates the outputstream to its respective client
+								((UserInfo)object).setToClient(outputFromClient);
 								UserInfo.getUsers().add((UserInfo)object);
+								
 							}
 							
 						}
