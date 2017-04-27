@@ -1,7 +1,5 @@
 package assignment7;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -10,21 +8,29 @@ public class UserInfo implements Serializable {
 	
 	private static ArrayList<UserInfo> users = new ArrayList<UserInfo>();
 	
-	private boolean flag = false;			// Used to determine if username/password found
-	private boolean getUsersFlag = false;	// Used to determine if server should return a list of users
+	private boolean getUser = false;
+	private boolean flag = false;
 	private String name = null;
+	private Socket clientSocket;
 	private String username;
 	private String password;
-	private ObjectOutputStream toClient; 
+	// Client Identifier
+	private ClientObserver writer;
 
 
-	public boolean isGetUsersFlag() {
-		return getUsersFlag;
+	public ClientObserver getWriter() {
+		return writer;
 	}
-	public void setGetUsersFlag(boolean getUsersFlag) {
-		this.getUsersFlag = getUsersFlag;
+	public void setWriter(ClientObserver writer) {
+		this.writer = writer;
 	}
-
+	public boolean isGetUser() {
+		return getUser;
+	}
+	public void setGetUser(boolean getUser) {
+		this.getUser = getUser;
+	}
+	
 	public boolean isFlag() {
 		return flag;
 	}
@@ -44,12 +50,11 @@ public class UserInfo implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public ObjectOutputStream getToClient() {
-		return toClient;
+	public Socket getClientSocket() {
+		return clientSocket;
 	}
-	public void setToClient(ObjectOutputStream toClient) {
-		this.toClient = toClient;
+	public void setClientSocket(Socket clientSocket) {
+		this.clientSocket = clientSocket;
 	}
 	public String getUsername() {
 		return username;

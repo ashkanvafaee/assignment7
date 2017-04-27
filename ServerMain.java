@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -13,6 +12,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class ServerMain extends Observable {
+	
 	
 	
 	
@@ -35,9 +35,16 @@ public class ServerMain extends Observable {
 			Socket clientSocket = serverSock.accept();
 			ClientObserver writer = new ClientObserver(clientSocket.getOutputStream());
 
-			Thread t = new Thread(new ClientHandler(clientSocket));
+			ClientHandler client = new ClientHandler(clientSocket);
+			client.writer = writer;
+			
+			Thread t = new Thread(client);
 			t.start();
 			this.addObserver(writer);
+			
+			// Adding writer to list of users
+			//UserInfo.
+			
 			System.out.println("Got a connection");
 		}
 
@@ -48,14 +55,17 @@ public class ServerMain extends Observable {
 
 	class ClientHandler implements Runnable {
 		private ObjectInputStream inputFromClient;
-		private ObjectOutputStream outputFromClient;
-
+		
+		// Client Identifier
+		private ClientObserver writer;
+		
+		
+		
 		public ClientHandler(Socket clientSocket) {
 			Socket sock = clientSocket;
 
 			try {
 				inputFromClient = new ObjectInputStream(clientSocket.getInputStream());
-				outputFromClient = new ObjectOutputStream(clientSocket.getOutputStream());
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -71,7 +81,6 @@ public class ServerMain extends Observable {
 				Object object;
 
 				while (true) {
-					
 					object = inputFromClient.readObject();
 					if (object != null) {
 						
@@ -87,29 +96,36 @@ public class ServerMain extends Observable {
 											setChanged();
 											ul.setFlag(true);
 											notifyObservers(ul);
+											
+											break;
 										}
 										else{
 											setChanged();
 											ul.setFlag(false);
 											notifyObservers(ul);
+											break;
 										}
-										
 										
 									}
 								}
 								
-								setChanged();
-								Boolean b = false;
-								notifyObservers(b);
+								
+								
+							}
+							
+							
+							// Get list of all users
+							else if(((UserInfo)object).isGetUser()){
 								
 								
 								
 							}
+							
+							
+							// Add new client to the list
 							else{
-								// Associates the outputstream to its respective client
-								((UserInfo)object).setToClient(outputFromClient);
+								//((UserInfo)object).setWriter(writer);
 								UserInfo.getUsers().add((UserInfo)object);
-								
 							}
 							
 						}

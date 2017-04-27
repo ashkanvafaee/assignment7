@@ -36,7 +36,6 @@ public class ChatClient extends Application {
 	
 	private static String name;
 	private static UserInfo UI;
-	private ArrayList<UserInfo> users = new ArrayList<UserInfo>();
 
 	private int worldWidth = 1000;
 	private int worldHeight = 800;
@@ -293,7 +292,7 @@ public class ChatClient extends Application {
 			if (e.getCode() == KeyCode.ENTER && !input.getText().equals("")) {
 				try {
 					String f = input.getText();
-					toServer.writeObject(ChatClient.name + ": " + input.getText());
+					toServer.writeObject(this.name + ": " + input.getText());
 					toServer.flush();
 					input.setText("");
 					input.requestFocus();
@@ -322,25 +321,13 @@ public class ChatClient extends Application {
 		scrollGrid.add(addFriend, 0, 0);
 		
 		
-		// Add friends handler
+		
+		// Add Friend Handler
 		addFriend.setOnAction(new EventHandler<ActionEvent>(){
 
-			
-			// Gets a list of all accounts created on the server
 			public void handle(ActionEvent arg0) {
-				UserInfo temp = new UserInfo();
-				temp.setGetUsersFlag(true);
-				try {
-					toServer.writeObject(temp);
-					
-// Waiting until server returns a list of current users that can be added
-					while(!wait){};
-					wait = false;
-					
-					
-					
-				} catch (IOException e) {
-				}
+				
+			
 				
 				
 			
@@ -372,7 +359,6 @@ public class ChatClient extends Application {
 
 	class IncomingReader implements Runnable {
 		public void run() {
-			String message = "";
 			try {
 				Object object;
 
@@ -398,20 +384,21 @@ public class ChatClient extends Application {
 				
 							}
 							
-							// Received
-							else if (((UserInfo) object).isGetUsersFlag()){
-								users = ((UserInfo)object).getUsers();
-								wait = true;
-							}
-
 							// Username / Password Failed
-							else {
-
+							else{
+								
 								accountFound = false;
 								wait = true;
-
+								
 							}
 						}
+						
+						
+						
+						
+						
+						
+						
 
 					}
 
