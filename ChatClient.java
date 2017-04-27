@@ -249,7 +249,7 @@ public class ChatClient extends Application {
 				}
 				wait = false;
 				
-				if(accountFound){
+				if(UI.isFlag()){
 					loginStage.close();
 					primaryStage.show();
 					primaryStage.setTitle(UI.getName());
@@ -379,15 +379,15 @@ public class ChatClient extends Application {
 							if(((UserInfo) object).isFlag()){
 								
 								UI = (UserInfo) object;
-								accountFound = true;
+								//accountFound = true;
 								wait = true;
 				
 							}
 							
 							// Username / Password Failed
 							else{
-								
-								accountFound = false;
+								UI = (UserInfo) object;
+								//accountFound = false;
 								wait = true;
 								
 							}

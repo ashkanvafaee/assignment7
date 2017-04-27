@@ -16,6 +16,21 @@ public class UserInfo implements Serializable {
 	private String password;
 	// Client Identifier
 	private ClientObserver writer;
+	
+	// Copy Constructor
+	public UserInfo(UserInfo ui){
+		this.setUsers(ui.getUsers());
+		this.setFlag(ui.isFlag());
+		this.name = ui.name;
+		this.clientSocket = ui.clientSocket;
+		this.username = ui.username;
+		this.password = ui.password;
+		this.writer = ui.writer;
+	}
+	
+	public UserInfo(){
+		
+	}
 
 
 	public ClientObserver getWriter() {

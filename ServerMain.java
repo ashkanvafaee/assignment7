@@ -94,15 +94,18 @@ public class ServerMain extends Observable {
 									if(ul.getUsername().equals(((UserInfo) object).getUsername())){
 										if(ul.getPassword().equals(((UserInfo) object).getPassword())){
 											setChanged();
-											ul.setFlag(true);
-											notifyObservers(ul);
+											//ul.setFlag(true);
+											UserInfo temp = new UserInfo(ul);
+											temp.setFlag(true);
+											notifyObservers(temp);
 											
 											break;
 										}
 										else{
 											setChanged();
-											ul.setFlag(false);
-											notifyObservers(ul);
+											UserInfo temp = new UserInfo(ul);
+											temp.setFlag(false);
+											notifyObservers(temp);
 											break;
 										}
 										
