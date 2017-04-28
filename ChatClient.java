@@ -27,16 +27,18 @@ public class ChatClient extends Application {
 
 	private TextArea output;
 	private TextField input;
-	
+
 	private boolean wait = false;
 	private boolean accountFound = false;
 
 	private ObjectInputStream fromServer;
 	private ObjectOutputStream toServer;
-	
+
 	private static String name;
 	private static UserInfo UI;
 
+	private ArrayList<UserInfo> allUsers = new ArrayList<>();
+	
 	private int worldWidth = 1000;
 	private int worldHeight = 800;
 
@@ -68,7 +70,7 @@ public class ChatClient extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		setUpNetwork();
-		
+
 		primaryStage.setTitle("Chat Client");
 
 		Pane grid = new Pane();
@@ -78,9 +80,8 @@ public class ChatClient extends Application {
 		Scene scene = new Scene(grid, worldWidth, worldHeight);
 		grid.setStyle("-fx-background-color: white;");
 		primaryStage.setScene(scene);
-		//primaryStage.show();
-		
-		
+		// primaryStage.show();
+
 		// Login Screen
 		Button submitNew = new Button("Submit");
 		Button submitOld = new Button("Submit");
@@ -91,9 +92,6 @@ public class ChatClient extends Application {
 		TextField userName = new TextField();
 		TextField password = new TextField();
 
-		
-		
-		
 		Pane login = new Pane();
 		login.setStyle("-fx-background-color: white;");
 		Scene loginScene = new Scene(login, 350, 400);
@@ -106,44 +104,42 @@ public class ChatClient extends Application {
 		newUser.setMinWidth(100);
 		newUser.setLayoutX(40);
 		newUser.setLayoutY(200);
-		
+
 		oldUser.setMaxWidth(100);
 		oldUser.setMinWidth(100);
 		oldUser.setLayoutX(195);
 		oldUser.setLayoutY(200);
-		
+
 		login.getChildren().add(oldUser);
 		login.getChildren().add(newUser);
-		
-	
-		
+
 		// newUser handler
 		newUser.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent AE) {
 				login.getChildren().remove(oldUser);
 				login.getChildren().remove(newUser);
-				
+
 				submitNew.setLayoutX(125);
 				submitNew.setLayoutY(300);
-				
+
 				nameLabel.setLayoutX(30);
 				nameLabel.setLayoutY(50);
-				
+
 				userNameLabel.setLayoutX(30);
 				userNameLabel.setLayoutY(100);
-				
+
 				passwordLabel.setLayoutX(30);
 				passwordLabel.setLayoutY(150);
-				
+
 				name.setLayoutX(140);
 				name.setLayoutY(50);
-				
+
 				userName.setLayoutX(140);
 				userName.setLayoutY(100);
-				
+
 				password.setLayoutX(140);
 				password.setLayoutY(150);
-				
+
 				login.getChildren().add(nameLabel);
 				login.getChildren().add(userNameLabel);
 				login.getChildren().add(passwordLabel);
@@ -151,25 +147,22 @@ public class ChatClient extends Application {
 				login.getChildren().add(userName);
 				login.getChildren().add(password);
 				login.getChildren().add(submitNew);
-				
-	
-				
+
 			}
-			
+
 		});
-		
-		
+
 		// oldUser handler
-		oldUser.setOnAction(new EventHandler<ActionEvent>(){
+		oldUser.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent AE) {
 				login.getChildren().remove(newUser);
 				login.getChildren().remove(oldUser);
-				
+
 				submitOld.setLayoutX(125);
 				submitOld.setLayoutY(250);
-				
+
 				userNameLabel.setLayoutX(30);
 				userNameLabel.setLayoutY(100);
 
@@ -191,19 +184,14 @@ public class ChatClient extends Application {
 			}
 
 		});
-		
-		// New user submit
-		submitNew.setOnAction(new EventHandler<ActionEvent>(){
 
-			
+		// New user submit
+		submitNew.setOnAction(new EventHandler<ActionEvent>() {
+
 			public void handle(ActionEvent arg0) {
-				
-				
-				
-				
-				
+
 				UserInfo ui = new UserInfo();
-				
+
 				ui.setName(name.getText());
 				ui.setUsername(userName.getText());
 				ui.setPassword(password.getText());
@@ -216,71 +204,56 @@ public class ChatClient extends Application {
 
 				ChatClient.name = name.getText();
 				ChatClient.UI = ui;
-				
+
 				loginStage.close();
 				primaryStage.show();
 				primaryStage.setTitle(ui.getName());
-				
-			}
-			
-		});
-		
-		
-		// Old user submit
-		submitOld.setOnAction(new EventHandler<ActionEvent>(){
 
-			
+			}
+
+		});
+
+		// Old user submit
+		submitOld.setOnAction(new EventHandler<ActionEvent>() {
+
 			public void handle(ActionEvent arg0) {
 				UserInfo ui = new UserInfo();
 				ui.setUsername(userName.getText());
 				ui.setPassword(password.getText());
-				
-				
+
 				try {
 					toServer.writeObject(ui);
 
+				} catch (Exception e) {
 				}
-				catch (Exception e) {
-				}
-				
+
 				// Wait until validation received from server
-				while(!wait){
-					
+				while (!wait) {
 				}
 				wait = false;
-				
-				if(UI.isFlag()){
+
+				if (UI.getLoginFound()) {
 					loginStage.close();
 					primaryStage.show();
 					primaryStage.setTitle(UI.getName());
 					ChatClient.name = UI.getName();
-					
+
 				}
-				
-				else{
-					
+
+				else {
+
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Invalid Input");
 					a.setResizable(true);
 					a.setContentText("Wrong username or password. Please try again.");
 					a.showAndWait();
 				}
-				
-				
-				
-				
-				
 
-				
-				
 			}
-			
-		});
-		
-		
-		
 
-		chatBox cb = new chatBox();
+		});
+
+		ChatBox cb = new ChatBox();
 		output = cb.getOutput();
 		input = cb.getInput();
 
@@ -319,27 +292,36 @@ public class ChatClient extends Application {
 		addFriend.setMaxWidth(198);
 
 		scrollGrid.add(addFriend, 0, 0);
-		
-		
-		
+
 		// Add Friend Handler
-		addFriend.setOnAction(new EventHandler<ActionEvent>(){
+		addFriend.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent arg0) {
+				UserInfo ui = new UserInfo();
+				ui.setGetUser(true);
+
+				try {
+					toServer.writeObject(ui);
+				} catch (Exception e) {
+				}
 				
-			
-				
-				
-			
-			
+				// Wait until validation received from server
+				while (!wait) {
+				}
+				wait = false;
+
+				Stage addFriendStage = new Stage();
+				Pane addFriendPane = new Pane();
+				TextField addFriendTF = new TextField();
+				addFriendPane.getChildren().add(addFriendTF);
+				addFriendTF.setLayoutX(150);
+				addFriendTF.setLayoutY(150);
+				Scene addFriendScene = new Scene(addFriendPane, 350, 400);
+				addFriendStage.setScene(addFriendScene);
+				addFriendStage.show();
 			}
-			
-			
-			
-			});
-		
-		
-		
+
+		});
 
 	}
 
@@ -363,42 +345,46 @@ public class ChatClient extends Application {
 				Object object;
 
 				while (true) {
+					System.out.println("Check1");
 					object = fromServer.readObject();
+					System.out.println("Check2");
 					if (object != null) {
-						
+						System.out.println("Null Obj");
+
 						// STRING
 						if (object instanceof String) {
 							output.appendText((String) object + "\n");
 						}
-						
-						
+
 						// USERINFO
-						if(object instanceof UserInfo){
-							
+						if (object instanceof UserInfo) {
+							System.out.println("Here0");
+
 							// Username / Password Found
-							if(((UserInfo) object).isFlag()){
-								
+							if (((UserInfo) object).getLoginFound()) {
+
 								UI = (UserInfo) object;
-								//accountFound = true;
+								// accountFound = true;
 								wait = true;
-				
+
 							}
-							
-							// Username / Password Failed
-							else{
-								UI = (UserInfo) object;
-								//accountFound = false;
+
+							// Get list of all users
+							else if (((UserInfo) object).getUserFlag()) {
+								System.out.println("Here3");
+								allUsers = ((UserInfo) object).getUsers();
 								wait = true;
-								
+								System.out.println("Here1");
+							}
+
+							// Username / Password Failed
+							else {
+								UI = (UserInfo) object;
+								// accountFound = false;
+								wait = true;
+
 							}
 						}
-						
-						
-						
-						
-						
-						
-						
 
 					}
 

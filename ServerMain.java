@@ -12,10 +12,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class ServerMain extends Observable {
-	
-	
-	
-	
 
 	public static void main(String[] args) {
 
@@ -37,30 +33,25 @@ public class ServerMain extends Observable {
 
 			ClientHandler client = new ClientHandler(clientSocket);
 			client.writer = writer;
-			
+
 			Thread t = new Thread(client);
 			t.start();
 			this.addObserver(writer);
-			
+
 			// Adding writer to list of users
-			//UserInfo.
-			
+			// UserInfo.
+
 			System.out.println("Got a connection");
 		}
 
 	}
-	
-	
-
 
 	class ClientHandler implements Runnable {
 		private ObjectInputStream inputFromClient;
-		
+
 		// Client Identifier
 		private ClientObserver writer;
-		
-		
-		
+
 		public ClientHandler(Socket clientSocket) {
 			Socket sock = clientSocket;
 
@@ -83,54 +74,53 @@ public class ServerMain extends Observable {
 				while (true) {
 					object = inputFromClient.readObject();
 					if (object != null) {
-						
+
 						// USERINFO
 						if (object instanceof UserInfo) {
-							
+
+							if (((UserInfo) object).getUserFlag()) {
+								((UserInfo) object).setUsers(UserInfo.getUsers());
+								notifyObservers(object);
+								System.out.println("Server Here");
+							}
+
 							// Check if username and password valid
-							if(((UserInfo) object).getName() == null){
-								
-								for(UserInfo ul : UserInfo.getUsers()){
-									if(ul.getUsername().equals(((UserInfo) object).getUsername())){
-										if(ul.getPassword().equals(((UserInfo) object).getPassword())){
+							else if (((UserInfo) object).getName() == null) {
+
+								for (UserInfo ul : UserInfo.getUsers()) {
+									if (ul.getUsername().equals(((UserInfo) object).getUsername())) {
+										if (ul.getPassword().equals(((UserInfo) object).getPassword())) {
 											setChanged();
-											//ul.setFlag(true);
+											// ul.setFlag(true);
 											UserInfo temp = new UserInfo(ul);
-											temp.setFlag(true);
+											temp.setLoginFound(true);
 											notifyObservers(temp);
-											
+
+											break;
+										} else {
+											setChanged();
+											UserInfo temp = new UserInfo(ul);
+											temp.setLoginFound(false);
+											notifyObservers(temp);
 											break;
 										}
-										else{
-											setChanged();
-											UserInfo temp = new UserInfo(ul);
-											temp.setFlag(false);
-											notifyObservers(temp);
-											break;
-										}
-										
+
 									}
 								}
-								
-								
-								
+
 							}
-							
-							
+
 							// Get list of all users
-							else if(((UserInfo)object).isGetUser()){
-								
-								
-								
+							else if (((UserInfo) object).getUserFlag()) {
+
 							}
-							
-							
+
 							// Add new client to the list
-							else{
-								//((UserInfo)object).setWriter(writer);
-								UserInfo.getUsers().add((UserInfo)object);
+							else {
+								// ((UserInfo)object).setWriter(writer);
+								UserInfo.getUsers().add((UserInfo) object);
 							}
-							
+
 						}
 
 						// STRING
@@ -138,7 +128,8 @@ public class ServerMain extends Observable {
 							System.out.println("server read " + (String) object);
 							setChanged();
 							notifyObservers(object);
-							// Observer.update(obj); // to notify a single observer
+							// Observer.update(obj); // to notify a single
+							// observer
 
 						}
 					}
