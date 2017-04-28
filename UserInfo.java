@@ -103,7 +103,6 @@ public class UserInfo implements Serializable {
 	}
 	
 	public ArrayList<UserInfo> getSendUsers() {
-		sendUsers = new ArrayList<>(users);
 		return sendUsers;
 	}
 	

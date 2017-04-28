@@ -98,7 +98,7 @@ public class ChatClient extends Application {
 		// Add friend button
 		Button addFriendBtn = new Button("Add Friend");
 		TextField addFriendTF = new TextField();
-		
+
 		// Logout button
 		Button logoutBtn = new Button("Logout");
 
@@ -247,7 +247,7 @@ public class ChatClient extends Application {
 					primaryStage.show();
 					primaryStage.setTitle(UI.getName());
 					ChatClient.name = UI.getName();
-					
+
 					int yPos = 0;
 					for (UserInfo uInfo : UI.getFriendList()) {
 						Button temp = new Button(uInfo.getName());
@@ -278,7 +278,6 @@ public class ChatClient extends Application {
 
 		});
 
-		
 		ChatBox cb = new ChatBox();
 		output = cb.getOutput();
 		input = cb.getInput();
@@ -356,24 +355,42 @@ public class ChatClient extends Application {
 			public void handle(ActionEvent arg0) {
 				UserInfo temp = new UserInfo();
 				temp.setGetUserFlag(true);
-				
+
 				try {
 					toServer.writeObject(temp);
 				} catch (IOException e) {
 				}
 
-				while(!wait){
+				while (!wait) {
 				}
 				wait = false;
-				
-					System.out.println(allUsers.size());
+
+				System.out.println(allUsers.size());
+
+				System.out.println("GOT HERE");
+				System.out.println("GOT 1");
+				System.out.println(addFriendTF.getText());
+
+				boolean flagFoundGlobalUser = false;
 				for (int i = 0; i < allUsers.size(); i++) {
-					System.out.println(allUsers.size());
+
+					if (allUsers.get(i).getUsername().equals(addFriendTF.getText())) {
+						if (!allUsers.get(i).getUsername().equals(ChatClient.name)) {
+							Alert a = new Alert(AlertType.ERROR);
+							a.setHeaderText("Error");
+							a.setResizable(true);
+							a.setContentText("Can't add yourself!");
+							a.showAndWait();
+						} else {
+							flagFoundGlobalUser = true;
+						}
+					}
 				}
 
-				if (allUsers.contains(addFriendTF.getText())) {
-				}
-				else {
+				if (flagFoundGlobalUser) {
+					System.out.println("USER FOUND");
+					// TODO: Add buttons
+				} else {
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Error");
 					a.setResizable(true);
@@ -382,7 +399,6 @@ public class ChatClient extends Application {
 				}
 			}
 		});
-		
 
 		// Logout Handler
 		logoutBtn.setOnAction(new EventHandler<ActionEvent>() {

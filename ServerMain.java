@@ -83,7 +83,7 @@ public class ServerMain extends Observable {
 								((UserInfo) object).setSendUsers(UserInfo.getUsers());
 								System.out.println("GETTING LIST OF USERS");
 								System.out.println(UserInfo.getUsers().size());
-								System.out.println(UserInfo.getUsers().get(0));
+								System.out.println(UserInfo.getUsers().get(0).getName());
 								setChanged();
 								notifyObservers(object);
 							}
