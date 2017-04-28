@@ -12,6 +12,11 @@ public class ChatBox {
 	private String name;
 	private ArrayList<String> usernames = new ArrayList<>();
 
+	public ArrayList<String> getUsernames() {
+		return usernames;
+	}
+
+
 	private ClientObserver ID;
 
 	private int chatWidth = 300;

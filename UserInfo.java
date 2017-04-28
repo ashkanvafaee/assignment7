@@ -12,6 +12,7 @@ public class UserInfo implements Serializable {
 
 	private boolean getUser = false;
 	private boolean loginFound = false;
+	private boolean updateFlag = false;
 	private String name = null;
 	private Socket clientSocket;
 	private String username;
@@ -21,13 +22,25 @@ public class UserInfo implements Serializable {
 
 	// Copy Constructor
 	public UserInfo(UserInfo ui) {
-		this.setUsers(ui.getUsers());
+		//this.setUsers(ui.getUsers());
 		this.setLoginFound(ui.getLoginFound());
 		this.name = ui.name;
 		this.clientSocket = ui.clientSocket;
 		this.username = ui.username;
 		this.password = ui.password;
 		this.writer = ui.writer;
+		this.sendUsers=new ArrayList<UserInfo>( ui.sendUsers);
+		this.friends=new ArrayList<UserInfo>(ui.friends);
+		this.updateFlag=ui.updateFlag;
+		this.getUser=ui.getUser;
+	}
+	
+	public boolean isUpdateFlag() {
+		return updateFlag;
+	}
+
+	public void setUpdateFlag(boolean updateFlag) {
+		this.updateFlag = updateFlag;
 	}
 
 	public UserInfo() {

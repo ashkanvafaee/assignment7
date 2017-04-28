@@ -1,5 +1,6 @@
 package assignment7;
 
+import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -11,7 +12,12 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import javax.swing.event.HyperlinkEvent.EventType;
+
+import javafx.collections.*;
+import javafx.scene.input.*;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -27,6 +33,9 @@ public class ChatClient extends Application {
 
 	private TextArea output;
 	private TextField input;
+	
+    private static int yPos = 1;
+
 
 	private boolean wait = false;
 	private boolean accountFound = false;
@@ -36,7 +45,10 @@ public class ChatClient extends Application {
 
 	private static String name;
 	private static UserInfo UI;
-
+	
+	// maps usernames to names
+	private HashMap<String,String> usernameToName = new HashMap<>();
+	
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
 
 	private int worldWidth = 1000;
@@ -72,7 +84,8 @@ public class ChatClient extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		setUpNetwork();
-
+		
+		
 		primaryStage.setTitle("Chat Client");
 
 		Pane grid = new Pane();
@@ -223,6 +236,22 @@ public class ChatClient extends Application {
 
 		});
 
+		
+		EventHandler<MouseEvent> event = new EventHandler<MouseEvent>(){
+
+			@Override
+			public void handle(MouseEvent event) {
+				System.out.println("asdfasdf");
+				output.appendText("asdfasdf");
+				
+			}
+			
+		};
+		
+		
+		
+		
+		
 		// Old user submit
 		submitOld.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -248,14 +277,37 @@ public class ChatClient extends Application {
 					primaryStage.setTitle(UI.getName());
 					ChatClient.name = UI.getName();
 
-					int yPos = 0;
+					System.out.println("FRIENDLIST SIZE: " + UI.getFriendList().size());
+					
 					for (UserInfo uInfo : UI.getFriendList()) {
 						Button temp = new Button(uInfo.getName());
+						temp.setMaxWidth(198);
+						temp.setMinWidth(198);
+						
+						
+						usernameToName.put(uInfo.getUsername(), uInfo.getName());
+						
+						temp.setAccessibleHelp(uInfo.getUsername());
+						
+
+
+						
+												
 						temp.setOnAction(new EventHandler<ActionEvent>() {
 
 							public void handle(ActionEvent event) {
 								temp.setText(uInfo.getName());
 								ChatBox friendChatBox = new ChatBox();
+								friendChatBox.getUsernames().add(temp.getAccessibleHelp());
+								System.out.println("BUTTON USERNAME: " + temp.getAccessibleHelp());
+								friendChatBox.getUsernames().add(UI.getUsername());
+								// Associates names with chatbox
+								friendChatBox.getUsernames().add(uInfo.getName());
+								
+								System.out.println("asdfasdf");
+								
+								grid.getChildren().add(friendChatBox.getInput());
+								grid.getChildren().add(friendChatBox.getOutput());
 							}
 
 						});
@@ -277,6 +329,9 @@ public class ChatClient extends Application {
 			}
 
 		});
+		
+		
+		
 
 		ChatBox cb = new ChatBox();
 		output = cb.getOutput();
@@ -371,26 +426,71 @@ public class ChatClient extends Application {
 				System.out.println("GOT 1");
 				System.out.println(addFriendTF.getText());
 
-				boolean flagFoundGlobalUser = false;
+				boolean flagAddYourself = false;
+				boolean flagFound = false;
 				for (int i = 0; i < allUsers.size(); i++) {
 
 					if (allUsers.get(i).getUsername().equals(addFriendTF.getText())) {
-						if (!allUsers.get(i).getUsername().equals(ChatClient.name)) {
+						if (allUsers.get(i).getUsername().equals(ChatClient.name)) {
 							Alert a = new Alert(AlertType.ERROR);
 							a.setHeaderText("Error");
 							a.setResizable(true);
 							a.setContentText("Can't add yourself!");
 							a.showAndWait();
-						} else {
-							flagFoundGlobalUser = true;
+							flagAddYourself = true;
+							break;
+						} else {							
+							System.out.println("USER FOUND");
+							Button b = new Button(addFriendTF.getText());
+							b.setMaxWidth(198);
+							b.setMinWidth(198);
+							
+							b.setOnAction(new EventHandler<ActionEvent> (){
+
+								@Override
+								public void handle(ActionEvent event) {
+									System.out.println("Button Pressed");
+									
+									
+									ChatBox cb = new ChatBox();
+									cb.getOutput().setLayoutY(50);
+									grid.getChildren().add(cb.getOutput());
+									
+									
+									
+									
+									
+								}
+								
+								
+							});
+							
+							System.out.println("BUTTON NAME SHOULD BE: " + addFriendTF.getText());
+							System.out.println("BUTTON USERNAME SHOULD BE: "  );
+							b.setAccessibleHelp(allUsers.get(i).getUsername());
+
+							UI.getFriendList().add(0,allUsers.get(i));
+							UI.setUpdateFlag(true);
+							
+							//allUsers.get(i).setUpdateFlag(true);
+							
+							flagFound = true;
+							try {
+								System.out.println("UPDATE REQUEST SENT" + UI.isUpdateFlag());
+								toServer.writeObject(new UserInfo(UI));		// Update user's friends list
+							} catch (IOException e) {					
+							}
+							
+							usernameToName.put(allUsers.get(i).getUsername(), allUsers.get(i).getName());
+							friendListButtons.add(b);
+							scrollGrid.add(b, 0, yPos);
+							friendListButtons.add(b);							
+							
 						}
 					}
 				}
-
-				if (flagFoundGlobalUser) {
-					System.out.println("USER FOUND");
-					// TODO: Add buttons
-				} else {
+				
+				if(!flagAddYourself && !flagFound) {
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Error");
 					a.setResizable(true);
