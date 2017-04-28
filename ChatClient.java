@@ -38,9 +38,11 @@ public class ChatClient extends Application {
 	private static UserInfo UI;
 
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
-	
+
 	private int worldWidth = 1000;
 	private int worldHeight = 800;
+
+	private ArrayList<Button> friendListButtons = new ArrayList<>();
 
 	public int getWorldWidth() {
 		return worldWidth;
@@ -83,6 +85,7 @@ public class ChatClient extends Application {
 		// primaryStage.show();
 
 		// Login Screen
+		GridPane scrollGrid = new GridPane();
 		Button submitNew = new Button("Submit");
 		Button submitOld = new Button("Submit");
 		Label nameLabel = new Label("Name:");
@@ -91,6 +94,13 @@ public class ChatClient extends Application {
 		TextField name = new TextField();
 		TextField userName = new TextField();
 		TextField password = new TextField();
+
+		// Add friend button
+		Button addFriendBtn = new Button("Add Friend");
+		TextField addFriendTF = new TextField();
+		
+		// Logout button
+		Button logoutBtn = new Button("Logout");
 
 		Pane login = new Pane();
 		login.setStyle("-fx-background-color: white;");
@@ -237,7 +247,22 @@ public class ChatClient extends Application {
 					primaryStage.show();
 					primaryStage.setTitle(UI.getName());
 					ChatClient.name = UI.getName();
+					
+					int yPos = 0;
+					for (UserInfo uInfo : UI.getFriendList()) {
+						Button temp = new Button(uInfo.getName());
+						temp.setOnAction(new EventHandler<ActionEvent>() {
 
+							public void handle(ActionEvent event) {
+								temp.setText(uInfo.getName());
+								ChatBox friendChatBox = new ChatBox();
+							}
+
+						});
+						friendListButtons.add(temp);
+						scrollGrid.add(temp, 0, yPos);
+						yPos++;
+					}
 				}
 
 				else {
@@ -253,6 +278,7 @@ public class ChatClient extends Application {
 
 		});
 
+		
 		ChatBox cb = new ChatBox();
 		output = cb.getOutput();
 		input = cb.getInput();
@@ -282,7 +308,6 @@ public class ChatClient extends Application {
 		scrollPane.setMinHeight(worldHeight);
 		scrollPane.setMinWidth(200);
 		scrollPane.setMaxWidth(200);
-		GridPane scrollGrid = new GridPane();
 		scrollPane.setContent(scrollGrid);
 		scrollPane.setLayoutX(worldWidth - scrollPane.getMaxWidth());
 		grid.getChildren().add(scrollPane);
@@ -298,13 +323,13 @@ public class ChatClient extends Application {
 
 			public void handle(ActionEvent arg0) {
 				UserInfo ui = new UserInfo();
-				ui.setGetUser(true);
+				ui.setGetUserFlag(true);
 
 				try {
 					toServer.writeObject(ui);
 				} catch (Exception e) {
 				}
-				
+
 				// Wait until validation received from server
 				while (!wait) {
 				}
@@ -312,15 +337,57 @@ public class ChatClient extends Application {
 
 				Stage addFriendStage = new Stage();
 				Pane addFriendPane = new Pane();
-				TextField addFriendTF = new TextField();
+				addFriendBtn.setLayoutX(250);
+				addFriendBtn.setLayoutY(100);
 				addFriendPane.getChildren().add(addFriendTF);
-				addFriendTF.setLayoutX(150);
-				addFriendTF.setLayoutY(150);
-				Scene addFriendScene = new Scene(addFriendPane, 350, 400);
+				addFriendPane.getChildren().add(addFriendBtn);
+				addFriendTF.setLayoutX(50);
+				addFriendTF.setLayoutY(100);
+				Scene addFriendScene = new Scene(addFriendPane, 350, 200);
 				addFriendStage.setScene(addFriendScene);
 				addFriendStage.show();
 			}
 
+		});
+
+		// Add Friend Button Handler
+		addFriendBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			public void handle(ActionEvent arg0) {
+				UserInfo temp = new UserInfo();
+				temp.setGetUserFlag(true);
+				
+				try {
+					toServer.writeObject(temp);
+				} catch (IOException e) {
+				}
+
+				while(!wait){
+				}
+				wait = false;
+				
+					System.out.println(allUsers.size());
+				for (int i = 0; i < allUsers.size(); i++) {
+					System.out.println(allUsers.size());
+				}
+
+				if (allUsers.contains(addFriendTF.getText())) {
+				}
+				else {
+					Alert a = new Alert(AlertType.ERROR);
+					a.setHeaderText("Error");
+					a.setResizable(true);
+					a.setContentText("No such user exists");
+					a.showAndWait();
+				}
+			}
+		});
+		
+
+		// Logout Handler
+		logoutBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent arg0) {
+			}
 		});
 
 	}
@@ -345,11 +412,8 @@ public class ChatClient extends Application {
 				Object object;
 
 				while (true) {
-					System.out.println("Check1");
 					object = fromServer.readObject();
-					System.out.println("Check2");
 					if (object != null) {
-						System.out.println("Null Obj");
 
 						// STRING
 						if (object instanceof String) {
@@ -358,7 +422,6 @@ public class ChatClient extends Application {
 
 						// USERINFO
 						if (object instanceof UserInfo) {
-							System.out.println("Here0");
 
 							// Username / Password Found
 							if (((UserInfo) object).getLoginFound()) {
@@ -371,10 +434,11 @@ public class ChatClient extends Application {
 
 							// Get list of all users
 							else if (((UserInfo) object).getUserFlag()) {
-								System.out.println("Here3");
-								allUsers = ((UserInfo) object).getUsers();
+								allUsers = ((UserInfo) object).getSendUsers();
+								System.out.println("CLIENT GET USER LIST");
+								System.out.println(allUsers.size());
+								System.out.println(allUsers.get(0).getName());
 								wait = true;
-								System.out.println("Here1");
 							}
 
 							// Username / Password Failed

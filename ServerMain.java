@@ -78,10 +78,14 @@ public class ServerMain extends Observable {
 						// USERINFO
 						if (object instanceof UserInfo) {
 
+							// Get list of all users
 							if (((UserInfo) object).getUserFlag()) {
-								((UserInfo) object).setUsers(UserInfo.getUsers());
+								((UserInfo) object).setSendUsers(UserInfo.getUsers());
+								System.out.println("GETTING LIST OF USERS");
+								System.out.println(UserInfo.getUsers().size());
+								System.out.println(UserInfo.getUsers().get(0));
+								setChanged();
 								notifyObservers(object);
-								System.out.println("Server Here");
 							}
 
 							// Check if username and password valid
@@ -110,15 +114,14 @@ public class ServerMain extends Observable {
 
 							}
 
-							// Get list of all users
-							else if (((UserInfo) object).getUserFlag()) {
-
-							}
 
 							// Add new client to the list
 							else {
 								// ((UserInfo)object).setWriter(writer);
 								UserInfo.getUsers().add((UserInfo) object);
+								System.out.println("ADDING CLIENT");
+								System.out.println(UserInfo.getUsers().size());
+								System.out.println(UserInfo.getUsers().get(0).getName());
 							}
 
 						}

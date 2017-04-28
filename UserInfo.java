@@ -6,7 +6,9 @@ import java.util.ArrayList;
 
 public class UserInfo implements Serializable {
 
-	private static ArrayList<UserInfo> users = new ArrayList<UserInfo>();
+	private static ArrayList<UserInfo> users = new ArrayList<>();
+	private ArrayList<UserInfo>	sendUsers;
+	private ArrayList<UserInfo> friends = new ArrayList<>();
 
 	private boolean getUser = false;
 	private boolean loginFound = false;
@@ -44,7 +46,7 @@ public class UserInfo implements Serializable {
 		return getUser;
 	}
 
-	public void setGetUser(boolean getUser) {
+	public void setGetUserFlag(boolean getUser) {
 		this.getUser = getUser;
 	}
 
@@ -95,5 +97,18 @@ public class UserInfo implements Serializable {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
+	
+	public ArrayList<UserInfo> getFriendList() {
+		return friends;
+	}
+	
+	public ArrayList<UserInfo> getSendUsers() {
+		sendUsers = new ArrayList<>(users);
+		return sendUsers;
+	}
+	
+	public void setSendUsers(ArrayList<UserInfo> newUserList) {
+		sendUsers = new ArrayList<>(newUserList);
+		users = newUserList;
+	}
 }
