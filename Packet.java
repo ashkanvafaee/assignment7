@@ -1,15 +1,34 @@
 package assignment7;
 
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Packet {
+public class Packet implements Serializable {
 	
-	private boolean getList = false;
-	private String text;
+	private String message;
 	
-	//ArrayList<Writer>
-	// IDs of all Clients that message should be sent to
-	ArrayList<ClientObserver> clientRecipients = new ArrayList<>();
+	private HashSet<String> clientGroup = new HashSet<>();
+	
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public HashSet<String> getClientGroup() {
+		return clientGroup;
+	}
+
+	public void setClientGroup(HashSet<String> clientGroup) {
+		this.clientGroup = clientGroup;
+	}
+
+
 	
 	
 	

@@ -9,6 +9,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class ClientObserver extends ObjectOutputStream implements Observer {
+	
+	
+	
 	public ClientObserver(OutputStream out) throws IOException {
 		super(out);
 	}
@@ -18,6 +21,7 @@ public class ClientObserver extends ObjectOutputStream implements Observer {
 		try {
 			this.writeObject(arg);// writer.println(arg);
 			this.flush(); // writer.flush();
+		
 		} catch (Exception e) {
 
 		}

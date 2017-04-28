@@ -29,8 +29,15 @@ public class UserInfo implements Serializable {
 		this.username = ui.username;
 		this.password = ui.password;
 		this.writer = ui.writer;
-		this.sendUsers=new ArrayList<UserInfo>( ui.sendUsers);
-		this.friends=new ArrayList<UserInfo>(ui.friends);
+		
+		if(ui.sendUsers!=null){
+			this.sendUsers=new ArrayList<UserInfo>( ui.sendUsers);
+		}
+		
+		if(ui.friends!=null){
+			this.friends=new ArrayList<UserInfo>(ui.friends);
+		}
+		
 		this.updateFlag=ui.updateFlag;
 		this.getUser=ui.getUser;
 	}

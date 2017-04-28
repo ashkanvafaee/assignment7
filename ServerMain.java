@@ -38,9 +38,6 @@ public class ServerMain extends Observable {
 			t.start();
 			this.addObserver(writer);
 
-			// Adding writer to list of users
-			// UserInfo.
-
 			System.out.println("Got a connection");
 		}
 
@@ -65,7 +62,7 @@ public class ServerMain extends Observable {
 
 		@Override
 		public void run() {
-			String message = "";
+			
 
 			try {
 
@@ -74,6 +71,18 @@ public class ServerMain extends Observable {
 				while (true) {
 					object = inputFromClient.readObject();
 					if (object != null) {
+						
+						// PACKET
+						
+						if(object instanceof Packet){
+							
+							System.out.println("PACKET RECEIVED");
+							
+							setChanged();
+							notifyObservers(object);
+							
+							
+						}
 
 						// USERINFO
 						if (object instanceof UserInfo) {
@@ -87,7 +96,7 @@ public class ServerMain extends Observable {
 								System.out.println(UserInfo.getUsers().size());
 								System.out.println(UserInfo.getUsers().get(0).getName());
 								setChanged();
-								notifyObservers(object);
+								notifyObservers(new UserInfo((UserInfo)object));
 							}
 							
 							// Updates user's friends list

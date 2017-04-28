@@ -40,8 +40,8 @@ public class ChatClient extends Application {
 	private boolean wait = false;
 	private boolean accountFound = false;
 
-	private ObjectInputStream fromServer;
-	private ObjectOutputStream toServer;
+	private static ObjectInputStream fromServer;
+	private static ObjectOutputStream toServer;
 
 	private static String name;
 	private static UserInfo UI;
@@ -49,13 +49,24 @@ public class ChatClient extends Application {
 	// maps usernames to names
 	private HashMap<String,String> usernameToName = new HashMap<>();
 	
+	private static ArrayList<ChatBox> chatBoxes = new ArrayList<>();
+	
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
 
-	private int worldWidth = 1000;
+	private int worldWidth = 1400;
 	private int worldHeight = 800;
 
 	private ArrayList<Button> friendListButtons = new ArrayList<>();
 
+	
+	public static String getName(){
+		return name;
+	}
+	
+	public static ObjectOutputStream getToServer(){
+		return toServer;
+	}
+	
 	public int getWorldWidth() {
 		return worldWidth;
 	}
@@ -296,16 +307,15 @@ public class ChatClient extends Application {
 						temp.setOnAction(new EventHandler<ActionEvent>() {
 
 							public void handle(ActionEvent event) {
-								temp.setText(uInfo.getName());
+								//temp.setText(uInfo.getName());
 								ChatBox friendChatBox = new ChatBox();
 								friendChatBox.getUsernames().add(temp.getAccessibleHelp());
 								System.out.println("BUTTON USERNAME: " + temp.getAccessibleHelp());
 								friendChatBox.getUsernames().add(UI.getUsername());
-								// Associates names with chatbox
-								friendChatBox.getUsernames().add(uInfo.getName());
 								
 								System.out.println("asdfasdf");
 								
+								chatBoxes.add(friendChatBox);
 								grid.getChildren().add(friendChatBox.getInput());
 								grid.getChildren().add(friendChatBox.getOutput());
 							}
@@ -333,15 +343,15 @@ public class ChatClient extends Application {
 		
 		
 
-		ChatBox cb = new ChatBox();
-		output = cb.getOutput();
-		input = cb.getInput();
+		//ChatBox cb = new ChatBox();
+		//output = cb.getOutput();
+		//input = cb.getInput();
 
-		grid.getChildren().add(cb.getInput());
-		grid.getChildren().add(cb.getOutput());
+		//grid.getChildren().add(cb.getInput());
+		//grid.getChildren().add(cb.getOutput());
 
 		// Send message via ENTER handler
-		cb.getInput().setOnKeyPressed(e -> {
+		/*cb.getInput().setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.ENTER && !input.getText().equals("")) {
 				try {
 					String f = input.getText();
@@ -354,7 +364,7 @@ public class ChatClient extends Application {
 				}
 			}
 
-		});
+		});*/
 
 		// Friend Scroll bar
 		ScrollPane scrollPane = new ScrollPane();
@@ -371,34 +381,41 @@ public class ChatClient extends Application {
 		addFriend.setMaxWidth(198);
 
 		scrollGrid.add(addFriend, 0, 0);
+		
+		// Add Friend Window
+		Stage addFriendStage = new Stage();
+		Pane addFriendPane = new Pane();
+		addFriendBtn.setLayoutX(250);
+		addFriendBtn.setLayoutY(100);
+		addFriendPane.getChildren().add(addFriendTF);
+		addFriendPane.getChildren().add(addFriendBtn);
+		addFriendTF.setLayoutX(50);
+		addFriendTF.setLayoutY(100);
+		Scene addFriendScene = new Scene(addFriendPane, 350, 200);
+		addFriendStage.setScene(addFriendScene);
 
 		// Add Friend Handler
 		addFriend.setOnAction(new EventHandler<ActionEvent>() {
 
 			public void handle(ActionEvent arg0) {
 				UserInfo ui = new UserInfo();
+				ui.setUsername(UI.getUsername());
 				ui.setGetUserFlag(true);
 
 				try {
 					toServer.writeObject(ui);
+					toServer.flush();
 				} catch (Exception e) {
 				}
 
+				System.out.println("WAITING NOW");
+				
 				// Wait until validation received from server
 				while (!wait) {
 				}
 				wait = false;
 
-				Stage addFriendStage = new Stage();
-				Pane addFriendPane = new Pane();
-				addFriendBtn.setLayoutX(250);
-				addFriendBtn.setLayoutY(100);
-				addFriendPane.getChildren().add(addFriendTF);
-				addFriendPane.getChildren().add(addFriendBtn);
-				addFriendTF.setLayoutX(50);
-				addFriendTF.setLayoutY(100);
-				Scene addFriendScene = new Scene(addFriendPane, 350, 200);
-				addFriendStage.setScene(addFriendScene);
+
 				addFriendStage.show();
 			}
 
@@ -413,6 +430,7 @@ public class ChatClient extends Application {
 
 				try {
 					toServer.writeObject(temp);
+					toServer.flush();
 				} catch (IOException e) {
 				}
 
@@ -444,6 +462,8 @@ public class ChatClient extends Application {
 							Button b = new Button(addFriendTF.getText());
 							b.setMaxWidth(198);
 							b.setMinWidth(198);
+							b.setAccessibleHelp(allUsers.get(i).getUsername());
+							usernameToName.put(allUsers.get(i).getUsername(), addFriendTF.getText());
 							
 							b.setOnAction(new EventHandler<ActionEvent> (){
 
@@ -453,8 +473,16 @@ public class ChatClient extends Application {
 									
 									
 									ChatBox cb = new ChatBox();
-									cb.getOutput().setLayoutY(50);
+									// Asscoiates usernames of both this client and the
+									// Client associated with the button to the chatbox
+									cb.getUsernames().add(b.getAccessibleHelp());
+									cb.getUsernames().add(UI.getUsername());
+									cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp())+ ":");
+									System.out.println("CHAT BOX ADDED");
 									grid.getChildren().add(cb.getOutput());
+									grid.getChildren().add(cb.getInput());
+									grid.getChildren().add(cb.getNameLabel());
+									chatBoxes.add(cb);
 									
 									
 									
@@ -467,7 +495,6 @@ public class ChatClient extends Application {
 							
 							System.out.println("BUTTON NAME SHOULD BE: " + addFriendTF.getText());
 							System.out.println("BUTTON USERNAME SHOULD BE: "  );
-							b.setAccessibleHelp(allUsers.get(i).getUsername());
 
 							UI.getFriendList().add(0,allUsers.get(i));
 							UI.setUpdateFlag(true);
@@ -478,12 +505,13 @@ public class ChatClient extends Application {
 							try {
 								System.out.println("UPDATE REQUEST SENT" + UI.isUpdateFlag());
 								toServer.writeObject(new UserInfo(UI));		// Update user's friends list
+								toServer.flush();
 							} catch (IOException e) {					
 							}
 							
 							usernameToName.put(allUsers.get(i).getUsername(), allUsers.get(i).getName());
 							friendListButtons.add(b);
-							scrollGrid.add(b, 0, yPos);
+							scrollGrid.add(b, 0, yPos++);
 							friendListButtons.add(b);							
 							
 						}
@@ -530,6 +558,31 @@ public class ChatClient extends Application {
 				while (true) {
 					object = fromServer.readObject();
 					if (object != null) {
+						
+						
+						// PACKET
+						if(object instanceof Packet){
+							
+							
+							if(((Packet)object).getClientGroup().contains(UI.getUsername())){
+								System.out.println("MESSAGE RECEIVED");
+								System.out.println("CHAT BOX SIZE: " + chatBoxes.size());
+								System.out.println("CLIENT GROUP SIZE: " + ((Packet)object).getClientGroup().size() );
+
+								for(int i=0; i<chatBoxes.size(); i++){
+									
+									if(chatBoxes.get(i).getUsernames().equals(((Packet)object).getClientGroup())){
+										chatBoxes.get(i).getOutput().appendText(((Packet)object).getMessage());
+										break;
+
+									}
+
+								}
+
+							}
+
+						}
+						
 
 						// STRING
 						if (object instanceof String) {
@@ -538,6 +591,9 @@ public class ChatClient extends Application {
 
 						// USERINFO
 						if (object instanceof UserInfo) {
+							
+							System.out.println(((UserInfo)object).getUserFlag() + "***");
+							
 
 							// Username / Password Found
 							if (((UserInfo) object).getLoginFound()) {
@@ -545,20 +601,25 @@ public class ChatClient extends Application {
 								UI = (UserInfo) object;
 								// accountFound = true;
 								wait = true;
+								System.out.println("WAIT OVER");
 
 							}
 
 							// Get list of all users
 							else if (((UserInfo) object).getUserFlag()) {
+
 								allUsers = ((UserInfo) object).getSendUsers();
 								System.out.println("CLIENT GET USER LIST");
 								System.out.println(allUsers.size());
 								System.out.println(allUsers.get(0).getName());
 								wait = true;
+
 							}
 
 							// Username / Password Failed
 							else {
+								System.out.println("Password Failed");
+								
 								UI = (UserInfo) object;
 								// accountFound = false;
 								wait = true;
@@ -568,7 +629,6 @@ public class ChatClient extends Application {
 
 					}
 
-					output.setWrapText(true);
 				}
 
 			} catch (Exception ex) {
