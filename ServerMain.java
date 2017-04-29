@@ -1,3 +1,15 @@
+ /* EE422C Project 7 submission by
+ * Replace <...> with your actual data.
+ * Kevin Chau
+ * kc28535
+ * 18238
+ * Ashkan Vafaee
+ * av28837
+ * 18238
+ * Slip days used: <1>
+ * Git URL: https://github.com/ashkanvafaee/assignment7
+ * Spring 2017
+*/
 package assignment7;
 
 import java.io.BufferedReader;
@@ -19,6 +31,7 @@ public class ServerMain extends Observable {
 			new ServerMain().init();
 
 		} catch (Exception e) {
+			
 
 		}
 
@@ -163,11 +176,35 @@ public class ServerMain extends Observable {
 
 							// Add new client to the list
 							else {
-								// ((UserInfo)object).setWriter(writer);
-								UserInfo.getUsers().add((UserInfo) object);
-								System.out.println("ADDING CLIENT");
+								
+								System.out.println("TRYING TO ADD USER");
+								
+								boolean alreadyAdded = false;
+								
 								System.out.println(UserInfo.getUsers().size());
-								System.out.println(UserInfo.getUsers().get(0).getName());
+								
+								for(UserInfo i: UserInfo.getUsers()){
+									if(i.getUsername().equals(((UserInfo)object).getUsername())){
+										
+										alreadyAdded = true;
+									}
+								}
+								
+								if(!alreadyAdded){
+									System.out.print("ADDING");
+									UserInfo.getUsers().add((UserInfo) object);
+								}
+								
+								// don't add if already exists
+								else{
+									System.out.println("NOT ADDED");
+									((UserInfo)object).setGetUserFlag(true);
+									((UserInfo)object).setSendUsers(UserInfo.getUsers());
+									setChanged();
+									notifyObservers(new UserInfo((UserInfo)object));
+									
+								}
+						
 							}
 
 						}
@@ -177,8 +214,7 @@ public class ServerMain extends Observable {
 							System.out.println("server read " + (String) object);
 							setChanged();
 							notifyObservers(object);
-							// Observer.update(obj); // to notify a single
-							// observer
+
 
 						}
 					}

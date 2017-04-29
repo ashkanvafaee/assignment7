@@ -1,3 +1,15 @@
+ /* EE422C Project 7 submission by
+ * Replace <...> with your actual data.
+ * Kevin Chau
+ * kc28535
+ * 18238
+ * Ashkan Vafaee
+ * av28837
+ * 18238
+ * Slip days used: <1>
+ * Git URL: https://github.com/ashkanvafaee/assignment7
+ * Spring 2017
+*/
 package assignment7;
 
 import java.util.*;
@@ -51,6 +63,8 @@ public class ChatBox {
 		input.setMinWidth(chatWidth);
 		input.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - 5);
 		input.setLayoutX(count * chatWidth + 25);
+		input.setStyle("-fx-border-color: red;");
+
 
 		// Send Message Handler
 		input.setOnKeyPressed(e -> {
@@ -84,8 +98,10 @@ public class ChatBox {
 		output.setEditable(false);
 		output.setLayoutX(count * chatWidth + 25);
 		output.setWrapText(true);
+		output.setStyle("-fx-border-color: red; -fx-control-inner-background: Aqua;");
 
 		// name label
+		nameLabel.setStyle("-fx-background-color: Black; -fx-border-color: red; -fx-text-fill: Yellow; ; -fx-font: 16 Impact;-fx-alignment: center ;");
 		nameLabel.setMaxWidth(chatWidth);
 		nameLabel.setMinWidth(chatWidth);
 		nameLabel.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - output.getMaxHeight() - 20);

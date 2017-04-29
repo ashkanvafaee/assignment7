@@ -1,3 +1,15 @@
+ /* EE422C Project 7 submission by
+ * Replace <...> with your actual data.
+ * Kevin Chau
+ * kc28535
+ * 18238
+ * Ashkan Vafaee
+ * av28837
+ * 18238
+ * Slip days used: <1>
+ * Git URL: https://github.com/ashkanvafaee/assignment7
+ * Spring 2017
+*/
 package assignment7;
 
 import java.awt.Event;
@@ -36,6 +48,8 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 public class ChatClient extends Application {
 
@@ -56,7 +70,7 @@ public class ChatClient extends Application {
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
 
 	private int worldWidth = 1600;
-	private int worldHeight = 800;
+	private int worldHeight = 850;
 
 	private ArrayList<Button> friendListButtons = new ArrayList<>();
 
@@ -101,6 +115,7 @@ public class ChatClient extends Application {
 		AnchorPane grid = new AnchorPane();
 
 		Scene scene = new Scene(grid, worldWidth, worldHeight);
+				
 		grid.setStyle("-fx-background-color: white;");
 		primaryStage.setScene(scene);
 		// primaryStage.show();
@@ -198,12 +213,12 @@ public class ChatClient extends Application {
 
 		Button addFriend = new Button("Add Friends");
 		
-		addFriend.setStyle("-fx-background-color: LimeGreen; -fx-border-color: black");
+		addFriend.setStyle("-fx-background-color: LimeGreen; -fx-border-color: black ; -fx-font: 16 Impact; ");
 		addFriend.setOnMouseEntered(new EventHandler<MouseEvent>(){
 
 			@Override
 			public void handle(MouseEvent arg0) {
-				addFriend.setStyle("-fx-background-color: Orange; -fx-border-color: black");
+				addFriend.setStyle("-fx-background-color: Orange; -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 				
@@ -215,7 +230,7 @@ public class ChatClient extends Application {
 
 			@Override
 			public void handle(MouseEvent event) {
-				addFriend.setStyle("-fx-background-color: LimeGreen; -fx-border-color: black");
+				addFriend.setStyle("-fx-background-color: LimeGreen; -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 			}
@@ -235,12 +250,13 @@ public class ChatClient extends Application {
 		Button logoutBtn = new Button("Logout");
 		//logoutBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, yellow, red);");
 
-		logoutBtn.setStyle("-fx-background-color: Salmon; -fx-border-color: black");
+		
+		logoutBtn.setStyle("-fx-background-color: Salmon; -fx-border-color: black; -fx-font: 16 Impact;");
 		logoutBtn.setOnMouseEntered(new EventHandler<MouseEvent>(){
 
 			@Override
 			public void handle(MouseEvent arg0) {
-				logoutBtn.setStyle("-fx-background-color: Orange; -fx-border-color: black");
+				logoutBtn.setStyle("-fx-background-color: Orange; -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 				
@@ -252,7 +268,7 @@ public class ChatClient extends Application {
 
 			@Override
 			public void handle(MouseEvent event) {
-				logoutBtn.setStyle("-fx-background-color: Salmon; -fx-border-color: black");
+				logoutBtn.setStyle("-fx-background-color: Salmon; -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 			}
@@ -273,12 +289,12 @@ public class ChatClient extends Application {
 		
 		
 		
-		groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, yellow, pink); -fx-border-color: black");
+		groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, yellow, pink); -fx-border-color: black ; -fx-font: 16 Impact;");
 		groupChatBtn.setOnMouseEntered(new EventHandler<MouseEvent>(){
 
 			@Override
 			public void handle(MouseEvent arg0) {
-				groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, pink, yellow); -fx-border-color: black");
+				groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, pink, yellow); -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 				
@@ -290,7 +306,7 @@ public class ChatClient extends Application {
 
 			@Override
 			public void handle(MouseEvent event) {
-				groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, yellow, pink); -fx-border-color: black");
+				groupChatBtn.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, yellow, pink); -fx-border-color: black ; -fx-font: 16 Impact;");
 
 				
 			}
@@ -438,17 +454,38 @@ public class ChatClient extends Application {
 
 				try {
 					toServer.writeObject(ui);
-				} catch (IOException e) {
+					Thread.sleep(500);
+
+				} catch (Exception e) {
 
 				}
+				
+				boolean alreadyAdded = false;
+				for(UserInfo i: allUsers){
+					if(i.getUsername().equals(userName.getText())){
+						alreadyAdded = true;
+					}	
+				}
 
-				ChatClient.name = name.getText();
-				ChatClient.UI = ui;
+				if(!alreadyAdded){
+					ChatClient.name = name.getText();
+					ChatClient.UI = ui;
 
-				loginStage.close();
-				primaryStage.show();
-				primaryStage.setTitle(ui.getName());
-				Sound.playWelcomeSound();
+					loginStage.close();
+					primaryStage.show();
+					primaryStage.setTitle(ui.getName());
+					Sound.playWelcomeSound();
+				}
+				else{
+					Alert a = new Alert(AlertType.ERROR);
+					a.setHeaderText("Invalid Username");
+					a.setResizable(true);
+					a.setContentText("Username already taken. Please try again.");
+					a.showAndWait();
+					
+					
+				}
+
 			}
 
 		});
@@ -484,13 +521,13 @@ public class ChatClient extends Application {
 						temp.setMaxWidth(198);
 						temp.setMinWidth(198);
 						
-						temp.setStyle("-fx-background-color: Black; -fx-border-color: Red; -fx-text-fill: Yellow;");
+						temp.setStyle("-fx-background-color: Black; -fx-border-color: Red; -fx-text-fill: Yellow; ; -fx-font: 16 Impact;");
 
 						temp.setOnMouseEntered(new EventHandler<MouseEvent>(){
 
 							@Override
 							public void handle(MouseEvent arg0) {
-								temp.setStyle("-fx-background-color: Orange; -fx-border-color: Red");
+								temp.setStyle("-fx-background-color: Orange; -fx-border-color: Red ; -fx-font: 16 Impact;");
 
 							}
 							
@@ -500,7 +537,7 @@ public class ChatClient extends Application {
 
 							@Override
 							public void handle(MouseEvent arg0) {
-								temp.setStyle("-fx-background-color: Black; -fx-border-color: Red; -fx-text-fill: Yellow;");
+								temp.setStyle("-fx-background-color: Black; -fx-border-color: Red; -fx-text-fill: Yellow; ; -fx-font: 16 Impact;");
 
 							}
 							
@@ -514,16 +551,33 @@ public class ChatClient extends Application {
 						temp.setOnAction(new EventHandler<ActionEvent>() {
 
 							public void handle(ActionEvent event) {
-								// temp.setText(uInfo.getName());
-								if (ChatBox.getCount() <= 3) {
+								boolean alreadyMade = false;
+								
+								HashSet<String> check = new HashSet<>();
+								check.add(temp.getAccessibleHelp());
+								check.add(UI.getUsername());
+								
+								for(ChatBox i: chatBoxes){
+									if(i.getUsernames().equals(check)){
+										alreadyMade = true;
+									}
+								}
+								
+								
+								
+								
+								
+								if (ChatBox.getCount() <= 3 && !alreadyMade) {
 
 									ChatBox friendChatBox = new ChatBox();
+									friendChatBox.getNameLabel().setText(temp.getText());
 									friendChatBox.getUsernames().add(temp.getAccessibleHelp());
 									friendChatBox.getUsernames().add(UI.getUsername());
 
 									chatBoxes.add(friendChatBox);
 									grid.getChildren().add(friendChatBox.getInput());
 									grid.getChildren().add(friendChatBox.getOutput());
+									grid.getChildren().add(friendChatBox.getNameLabel());
 								}
 							}
 
@@ -603,17 +657,17 @@ public class ChatClient extends Application {
 							flagAddYourself = true;
 							break;
 						} else {
-							Button b = new Button(addFriendTF.getText());
+							Button b = new Button(allUsers.get(i).getName());
 							b.setMaxWidth(198);
 							b.setMinWidth(198);
 														
-							b.setStyle("-fx-background-color: Black; -fx-border-color: red; -fx-text-fill: Yellow;");
+							b.setStyle("-fx-background-color: Black; -fx-border-color: red; -fx-text-fill: Yellow; ; -fx-font: 16 Impact;");
 
 							b.setOnMouseEntered(new EventHandler<MouseEvent>(){
 
 								@Override
 								public void handle(MouseEvent arg0) {
-									b.setStyle("-fx-background-color: Orange; -fx-border-color: red");
+									b.setStyle("-fx-background-color: Orange; -fx-border-color: red ; -fx-font: 16 Impact;");
 
 								}
 								
@@ -623,7 +677,7 @@ public class ChatClient extends Application {
 
 								@Override
 								public void handle(MouseEvent arg0) {
-									b.setStyle("-fx-background-color: Black; -fx-border-color: red; -fx-text-fill: Yellow;");
+									b.setStyle("-fx-background-color: Black; -fx-border-color: red; -fx-text-fill: Yellow; ; -fx-font: 16 Impact;");
 
 								}
 								
@@ -631,14 +685,29 @@ public class ChatClient extends Application {
 							
 							
 							b.setAccessibleHelp(allUsers.get(i).getUsername());
-							usernameToName.put(allUsers.get(i).getUsername(), addFriendTF.getText());
+							usernameToName.put(allUsers.get(i).getUsername(), allUsers.get(i).getName());
 
 							b.setOnAction(new EventHandler<ActionEvent>() {
 
 								@Override
 								public void handle(ActionEvent event) {
+									
+									boolean alreadyMade = false;
+									
+									HashSet<String> check = new HashSet<>();
+									check.add(b.getAccessibleHelp());
+									check.add(UI.getUsername());
+									
+									for(ChatBox i: chatBoxes){
+										if(i.getUsernames().equals(check)){
+											alreadyMade = true;
+										}
+									}
+									
+									
+									
 
-									if (ChatBox.getCount() <= 3) {
+									if (ChatBox.getCount() <= 3 && !alreadyMade) {
 										ChatBox cb = new ChatBox();
 										// Asscoiates usernames of both this
 										// client
@@ -648,7 +717,7 @@ public class ChatClient extends Application {
 										// chatbox
 										cb.getUsernames().add(b.getAccessibleHelp());
 										cb.getUsernames().add(UI.getUsername());
-										cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()) + ":");
+										cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()));
 										grid.getChildren().add(cb.getOutput());
 										grid.getChildren().add(cb.getInput());
 										grid.getChildren().add(cb.getNameLabel());
@@ -787,6 +856,60 @@ public class ChatClient extends Application {
 				}
 			}
 		});
+		
+		
+		
+		
+		
+		
+		/********************************WEB BROWSTER *************************/
+		WebView myBrowser = new WebView();
+		WebEngine myWebEngine = myBrowser.getEngine();
+		myWebEngine.load("http://www.google.com");
+		
+		myBrowser.setLayoutX(0);
+		myBrowser.setLayoutY(50);
+		myBrowser.setMinWidth(1400);
+		myBrowser.setMaxWidth(1400);		
+		myBrowser.setMinHeight(550);
+		myBrowser.setMaxHeight(550);
+		
+		grid.getChildren().add(myBrowser);
+		
+		TextField searchBar = new TextField();
+		searchBar.setPromptText("Search...");
+		searchBar.setMinWidth(1400);
+		searchBar.setMaxWidth(1400);
+		searchBar.setMaxHeight(30);
+		searchBar.setMinHeight(30);
+		searchBar.setLayoutX(0);
+		searchBar.setLayoutY(0);
+		
+		searchBar.setOnKeyPressed(e -> {
+			if (e.getCode() == KeyCode.ENTER && !searchBar.getText().equals("")) {
+				
+				
+				if (searchBar.getText().startsWith("www.")) {
+					
+					myWebEngine.load("https://" + searchBar.getText());
+					
+
+				} else if (!searchBar.getText().startsWith("https://www")) {
+					myWebEngine.load("https://www." + searchBar.getText());
+				}
+				
+				
+			}
+			
+		});
+	
+		grid.getChildren().add(searchBar);
+		
+		
+		
+		
+		
+		
 	}
 
 	private boolean setUpNetwork(String serverIP) {
