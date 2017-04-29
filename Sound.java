@@ -38,7 +38,7 @@ public class Sound {
 	public static void playSendSound() {
 		String sendSound = "";
 		try {
-			sendSound = receiveSoundFile.getCanonicalPath();
+			sendSound = sendSoundFile.getCanonicalPath();
 		} catch (Exception e) {
 		}
 		
@@ -50,7 +50,7 @@ public class Sound {
 	public static void playGoodbyeSound() {
 		String goodbyeSound = "";
 		try {
-			goodbyeSound = receiveSoundFile.getCanonicalPath();
+			goodbyeSound = goodbyeSoundFile.getCanonicalPath();
 		} catch (Exception e) {
 		}
 		

@@ -62,7 +62,6 @@ public class ServerMain extends Observable {
 
 		@Override
 		public void run() {
-			
 
 			try {
 
@@ -71,23 +70,22 @@ public class ServerMain extends Observable {
 				while (true) {
 					object = inputFromClient.readObject();
 					if (object != null) {
-						
+
 						// PACKET
-						
-						if(object instanceof Packet){
-							
+
+						if (object instanceof Packet) {
+
 							System.out.println("PACKET RECEIVED");
-							
+
 							setChanged();
 							notifyObservers(object);
-							
-							
+
 						}
 
 						// USERINFO
 						if (object instanceof UserInfo) {
-							
-							System.out.println("USER INFO RECEIVED:" + ((UserInfo)object).getUsername());
+
+							System.out.println("USER INFO RECEIVED:" + ((UserInfo) object).getUsername());
 
 							// Get list of all users
 							if (((UserInfo) object).getUserFlag()) {
@@ -96,38 +94,40 @@ public class ServerMain extends Observable {
 								System.out.println(UserInfo.getUsers().size());
 								System.out.println(UserInfo.getUsers().get(0).getName());
 								setChanged();
-								notifyObservers(new UserInfo((UserInfo)object));
+								notifyObservers(new UserInfo((UserInfo) object));
 							}
-							
+
 							// Updates user's friends list
-							else if (((UserInfo)object).isUpdateFlag()){
+							else if (((UserInfo) object).isUpdateFlag()) {
 								System.out.println("IN UPDATE");
 								System.out.println("SIZE =" + UserInfo.getUsers().size());
-								
-								for(int i=0; i<UserInfo.getUsers().size(); i++){
-									if(UserInfo.getUsers().get(i).getUsername().equals(((UserInfo)object).getUsername())){
+
+								for (int i = 0; i < UserInfo.getUsers().size(); i++) {
+									if (UserInfo.getUsers().get(i).getUsername()
+											.equals(((UserInfo) object).getUsername())) {
 										System.out.println("UPDATE SUCCESSFUL");
-										System.out.println("FRIENDSLIST SIZE: " + ((UserInfo)object).getFriendList().size());
+										System.out.println(
+												"FRIENDSLIST SIZE: " + ((UserInfo) object).getFriendList().size());
 										UserInfo temp = new UserInfo((UserInfo.getUsers().get(i)));
 										UserInfo.getUsers().remove(i);
-										temp.getFriendList().add(((UserInfo)object).getFriendList().get(0));
+										temp.getFriendList().add(((UserInfo) object).getFriendList().get(0));
 										UserInfo.getUsers().add(temp);
 										System.out.println("****" + UserInfo.getUsers().get(i).getUsername());
 										break;
-										
+
 									}
 								}
-								
-								for(UserInfo i : UserInfo.getUsers()){
+
+								for (UserInfo i : UserInfo.getUsers()) {
 									System.out.println(i.getUsername() + i.getFriendList().size());
 								}
-								
-								
-								
+
 							}
 
 							// Check if username and password valid
 							else if (((UserInfo) object).getName() == null) {
+
+								boolean noUsersFlag = false;
 
 								for (UserInfo ul : UserInfo.getUsers()) {
 									if (ul.getUsername().equals(((UserInfo) object).getUsername())) {
@@ -135,9 +135,11 @@ public class ServerMain extends Observable {
 											setChanged();
 											// ul.setFlag(true);
 											UserInfo temp = new UserInfo(ul);
-											System.out.println("SERVER SIDE FRIENDS LIST SIZE: " + temp.getFriendList().size() + temp.getUsername());
+											System.out.println("SERVER SIDE FRIENDS LIST SIZE: "
+													+ temp.getFriendList().size() + temp.getUsername());
 											temp.setLoginFound(true);
 											notifyObservers(temp);
+											noUsersFlag = true;
 
 											break;
 										} else {
@@ -145,14 +147,19 @@ public class ServerMain extends Observable {
 											UserInfo temp = new UserInfo(ul);
 											temp.setLoginFound(false);
 											notifyObservers(temp);
+											noUsersFlag = true;
 											break;
 										}
 
 									}
 								}
 
+								if (!noUsersFlag) {
+									UserInfo temp = new UserInfo();
+									setChanged();
+									notifyObservers(temp);
+								}
 							}
-
 
 							// Add new client to the list
 							else {

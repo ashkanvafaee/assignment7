@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.swing.event.HyperlinkEvent.EventType;
 
@@ -33,11 +34,9 @@ public class ChatClient extends Application {
 
 	private TextArea output;
 	private TextField input;
-	
-    private static int yPos = 1;
 
+	private static int yPos = 3;
 
-	private boolean wait = false;
 	private boolean accountFound = false;
 
 	private static ObjectInputStream fromServer;
@@ -45,12 +44,12 @@ public class ChatClient extends Application {
 
 	private static String name;
 	private static UserInfo UI;
-	
+
 	// maps usernames to names
-	private HashMap<String,String> usernameToName = new HashMap<>();
-	
+	private HashMap<String, String> usernameToName = new HashMap<>();
+
 	private static ArrayList<ChatBox> chatBoxes = new ArrayList<>();
-	
+
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
 
 	private int worldWidth = 1400;
@@ -58,15 +57,14 @@ public class ChatClient extends Application {
 
 	private ArrayList<Button> friendListButtons = new ArrayList<>();
 
-	
-	public static String getName(){
+	public static String getName() {
 		return name;
 	}
-	
-	public static ObjectOutputStream getToServer(){
+
+	public static ObjectOutputStream getToServer() {
 		return toServer;
 	}
-	
+
 	public int getWorldWidth() {
 		return worldWidth;
 	}
@@ -95,8 +93,7 @@ public class ChatClient extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		setUpNetwork();
-		
-		
+
 		primaryStage.setTitle("Chat Client");
 
 		Pane grid = new Pane();
@@ -123,9 +120,6 @@ public class ChatClient extends Application {
 		Button addFriendBtn = new Button("Add Friend");
 		TextField addFriendTF = new TextField();
 
-		// Logout button
-		Button logoutBtn = new Button("Logout");
-
 		Pane login = new Pane();
 		login.setStyle("-fx-background-color: white;");
 		Scene loginScene = new Scene(login, 350, 400);
@@ -146,6 +140,74 @@ public class ChatClient extends Application {
 
 		login.getChildren().add(oldUser);
 		login.getChildren().add(newUser);
+
+		// Friend Scroll bar
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setMaxHeight(worldHeight);
+		scrollPane.setMinHeight(worldHeight);
+		scrollPane.setMinWidth(200);
+		scrollPane.setMaxWidth(200);
+		scrollPane.setContent(scrollGrid);
+		scrollPane.setLayoutX(worldWidth - scrollPane.getMaxWidth());
+		grid.getChildren().add(scrollPane);
+
+		Button addFriend = new Button("Add Friends");
+		addFriend.setMinWidth(198);
+		addFriend.setMaxWidth(198);
+
+		// Logout buttons
+		Button logoutBtn = new Button("Logout");
+		logoutBtn.setMinWidth(198);
+		logoutBtn.setMaxWidth(198);
+		Button logoutYes = new Button("Yes");
+		Button logoutNo = new Button("No");
+
+		// Group chat buttons
+		Button groupChatBtn = new Button("Add users to group chat");
+		groupChatBtn.setMinWidth(198);
+		groupChatBtn.setMaxWidth(198);
+		Button addToGroupBtn = new Button("Add user");
+		TextField groupChatTF = new TextField();
+
+		// Logout Window
+		Stage logoutStage = new Stage();
+		Pane logoutPane = new Pane();
+		logoutPane.getChildren().add(logoutYes);
+		logoutPane.getChildren().add(logoutNo);
+		logoutYes.setLayoutX(50);
+		logoutYes.setLayoutY(100);
+		logoutNo.setLayoutX(150);
+		logoutNo.setLayoutY(100);
+		Scene logoutScene = new Scene(logoutPane, 350, 200);
+		logoutStage.setScene(logoutScene);
+
+		scrollGrid.add(logoutBtn, 0, 0);
+		scrollGrid.add(addFriend, 0, 1);
+		scrollGrid.add(groupChatBtn, 0, 2);
+
+		// Add Friend Window
+		Stage addFriendStage = new Stage();
+		Pane addFriendPane = new Pane();
+		addFriendBtn.setLayoutX(250);
+		addFriendBtn.setLayoutY(100);
+		addFriendPane.getChildren().add(addFriendTF);
+		addFriendPane.getChildren().add(addFriendBtn);
+		addFriendTF.setLayoutX(50);
+		addFriendTF.setLayoutY(100);
+		Scene addFriendScene = new Scene(addFriendPane, 350, 200);
+		addFriendStage.setScene(addFriendScene);
+
+		// Group chat window
+		Stage groupChatStage = new Stage();
+		Pane groupChatPane = new Pane();
+		groupChatTF.setLayoutX(50);
+		groupChatTF.setLayoutY(100);
+		groupChatPane.getChildren().add(groupChatTF);
+		addToGroupBtn.setLayoutX(250);
+		addToGroupBtn.setLayoutY(100);
+		groupChatPane.getChildren().add(addToGroupBtn);
+		Scene groupChatScene = new Scene(groupChatPane, 350, 200);
+		groupChatStage.setScene(groupChatScene);
 
 		// newUser handler
 		newUser.setOnAction(new EventHandler<ActionEvent>() {
@@ -242,27 +304,22 @@ public class ChatClient extends Application {
 				loginStage.close();
 				primaryStage.show();
 				primaryStage.setTitle(ui.getName());
-
+				Sound.playWelcomeSound();
 			}
 
 		});
 
-		
-		EventHandler<MouseEvent> event = new EventHandler<MouseEvent>(){
+		EventHandler<MouseEvent> event = new EventHandler<MouseEvent>() {
 
 			@Override
 			public void handle(MouseEvent event) {
 				System.out.println("asdfasdf");
 				output.appendText("asdfasdf");
-				
+
 			}
-			
+
 		};
-		
-		
-		
-		
-		
+
 		// Old user submit
 		submitOld.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -278,43 +335,39 @@ public class ChatClient extends Application {
 				}
 
 				// Wait until validation received from server
-				while (!wait) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
 				}
-				wait = false;
-
 				if (UI.getLoginFound()) {
 					loginStage.close();
 					primaryStage.show();
 					primaryStage.setTitle(UI.getName());
 					ChatClient.name = UI.getName();
+					Sound.playWelcomeSound();
 
 					System.out.println("FRIENDLIST SIZE: " + UI.getFriendList().size());
-					
+
 					for (UserInfo uInfo : UI.getFriendList()) {
 						Button temp = new Button(uInfo.getName());
 						temp.setMaxWidth(198);
 						temp.setMinWidth(198);
-						
-						
+
 						usernameToName.put(uInfo.getUsername(), uInfo.getName());
-						
+
 						temp.setAccessibleHelp(uInfo.getUsername());
-						
 
-
-						
-												
 						temp.setOnAction(new EventHandler<ActionEvent>() {
 
 							public void handle(ActionEvent event) {
-								//temp.setText(uInfo.getName());
+								// temp.setText(uInfo.getName());
 								ChatBox friendChatBox = new ChatBox();
 								friendChatBox.getUsernames().add(temp.getAccessibleHelp());
 								System.out.println("BUTTON USERNAME: " + temp.getAccessibleHelp());
 								friendChatBox.getUsernames().add(UI.getUsername());
-								
+
 								System.out.println("asdfasdf");
-								
+
 								chatBoxes.add(friendChatBox);
 								grid.getChildren().add(friendChatBox.getInput());
 								grid.getChildren().add(friendChatBox.getOutput());
@@ -339,60 +392,6 @@ public class ChatClient extends Application {
 			}
 
 		});
-		
-		
-		
-
-		//ChatBox cb = new ChatBox();
-		//output = cb.getOutput();
-		//input = cb.getInput();
-
-		//grid.getChildren().add(cb.getInput());
-		//grid.getChildren().add(cb.getOutput());
-
-		// Send message via ENTER handler
-		/*cb.getInput().setOnKeyPressed(e -> {
-			if (e.getCode() == KeyCode.ENTER && !input.getText().equals("")) {
-				try {
-					String f = input.getText();
-					toServer.writeObject(this.name + ": " + input.getText());
-					toServer.flush();
-					input.setText("");
-					input.requestFocus();
-				} catch (Exception e2) {
-
-				}
-			}
-
-		});*/
-
-		// Friend Scroll bar
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setMaxHeight(worldHeight);
-		scrollPane.setMinHeight(worldHeight);
-		scrollPane.setMinWidth(200);
-		scrollPane.setMaxWidth(200);
-		scrollPane.setContent(scrollGrid);
-		scrollPane.setLayoutX(worldWidth - scrollPane.getMaxWidth());
-		grid.getChildren().add(scrollPane);
-
-		Button addFriend = new Button("Add Friends");
-		addFriend.setMinWidth(198);
-		addFriend.setMaxWidth(198);
-
-		scrollGrid.add(addFriend, 0, 0);
-		
-		// Add Friend Window
-		Stage addFriendStage = new Stage();
-		Pane addFriendPane = new Pane();
-		addFriendBtn.setLayoutX(250);
-		addFriendBtn.setLayoutY(100);
-		addFriendPane.getChildren().add(addFriendTF);
-		addFriendPane.getChildren().add(addFriendBtn);
-		addFriendTF.setLayoutX(50);
-		addFriendTF.setLayoutY(100);
-		Scene addFriendScene = new Scene(addFriendPane, 350, 200);
-		addFriendStage.setScene(addFriendScene);
 
 		// Add Friend Handler
 		addFriend.setOnAction(new EventHandler<ActionEvent>() {
@@ -409,13 +408,12 @@ public class ChatClient extends Application {
 				}
 
 				System.out.println("WAITING NOW");
-				
+
 				// Wait until validation received from server
-				while (!wait) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
 				}
-				wait = false;
-
-
 				addFriendStage.show();
 			}
 
@@ -434,15 +432,10 @@ public class ChatClient extends Application {
 				} catch (IOException e) {
 				}
 
-				while (!wait) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
 				}
-				wait = false;
-
-				System.out.println(allUsers.size());
-
-				System.out.println("GOT HERE");
-				System.out.println("GOT 1");
-				System.out.println(addFriendTF.getText());
 
 				boolean flagAddYourself = false;
 				boolean flagFound = false;
@@ -457,68 +450,64 @@ public class ChatClient extends Application {
 							a.showAndWait();
 							flagAddYourself = true;
 							break;
-						} else {							
+						} else {
 							System.out.println("USER FOUND");
 							Button b = new Button(addFriendTF.getText());
 							b.setMaxWidth(198);
 							b.setMinWidth(198);
 							b.setAccessibleHelp(allUsers.get(i).getUsername());
 							usernameToName.put(allUsers.get(i).getUsername(), addFriendTF.getText());
-							
-							b.setOnAction(new EventHandler<ActionEvent> (){
+
+							b.setOnAction(new EventHandler<ActionEvent>() {
 
 								@Override
 								public void handle(ActionEvent event) {
 									System.out.println("Button Pressed");
-									
-									
+
 									ChatBox cb = new ChatBox();
-									// Asscoiates usernames of both this client and the
-									// Client associated with the button to the chatbox
+									// Asscoiates usernames of both this client
+									// and the
+									// Client associated with the button to the
+									// chatbox
 									cb.getUsernames().add(b.getAccessibleHelp());
 									cb.getUsernames().add(UI.getUsername());
-									cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp())+ ":");
+									cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()) + ":");
 									System.out.println("CHAT BOX ADDED");
 									grid.getChildren().add(cb.getOutput());
 									grid.getChildren().add(cb.getInput());
 									grid.getChildren().add(cb.getNameLabel());
 									chatBoxes.add(cb);
-									
-									
-									
-									
-									
 								}
-								
-								
-							});
-							
-							System.out.println("BUTTON NAME SHOULD BE: " + addFriendTF.getText());
-							System.out.println("BUTTON USERNAME SHOULD BE: "  );
 
-							UI.getFriendList().add(0,allUsers.get(i));
+							});
+
+							System.out.println("BUTTON NAME SHOULD BE: " + addFriendTF.getText());
+							System.out.println("BUTTON USERNAME SHOULD BE: ");
+
+							UI.getFriendList().add(0, allUsers.get(i));
 							UI.setUpdateFlag(true);
-							
-							//allUsers.get(i).setUpdateFlag(true);
-							
+
+							// allUsers.get(i).setUpdateFlag(true);
+
 							flagFound = true;
 							try {
 								System.out.println("UPDATE REQUEST SENT" + UI.isUpdateFlag());
-								toServer.writeObject(new UserInfo(UI));		// Update user's friends list
+								// Update user's friends list
+								toServer.writeObject(new UserInfo(UI));
 								toServer.flush();
-							} catch (IOException e) {					
+							} catch (IOException e) {
 							}
-							
+
 							usernameToName.put(allUsers.get(i).getUsername(), allUsers.get(i).getName());
 							friendListButtons.add(b);
 							scrollGrid.add(b, 0, yPos++);
-							friendListButtons.add(b);							
-							
+							friendListButtons.add(b);
+
 						}
 					}
 				}
-				
-				if(!flagAddYourself && !flagFound) {
+
+				if (!flagAddYourself && !flagFound) {
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Error");
 					a.setResizable(true);
@@ -531,9 +520,108 @@ public class ChatClient extends Application {
 		// Logout Handler
 		logoutBtn.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent arg0) {
+				logoutStage.show();
 			}
 		});
 
+		logoutYes.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent arg0) {
+				Sound.playGoodbyeSound();
+				// Sound.playWelcomeSound();
+				logoutStage.close();
+				primaryStage.close();
+				loginStage.show();
+			}
+		});
+
+		logoutNo.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent arg0) {
+				logoutStage.close();
+			}
+		});
+
+		// Groupchat Handler
+		groupChatBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent arg0) {
+
+				groupChatStage.show();
+			}
+		});
+
+		// Groupchat Add Users Handler
+		addToGroupBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent arg0) {
+
+				String[] usernameArr = groupChatTF.getText().split(", |,");
+				HashSet<String> listOfUsers = new HashSet<>();
+
+				boolean invalidUserAdded = false;
+
+				// Iterate through list of friends to check if valid
+				for (int i = 0; i < usernameArr.length; i++) {
+					if (usernameToName.containsKey(usernameArr[i])) {
+						listOfUsers.add(usernameArr[i]);
+					} else {
+						invalidUserAdded = true;
+					}
+				}
+
+				boolean createChatBoxFlag = true;
+				listOfUsers.add(UI.getUsername());
+
+				for (ChatBox cb : chatBoxes) {
+					if (cb.getUsernames().equals(listOfUsers)) {
+						createChatBoxFlag = false;
+					}
+				}
+
+				// Creates the chatbox if there is more than 1 user and there
+				// does not already exist a chatbox with the same set of users
+				listOfUsers.remove(UI.getUsername());
+				if (listOfUsers.size() > 0 && createChatBoxFlag) {
+					ChatBox groupChat = new ChatBox();
+					groupChat.getUsernames().add(UI.getUsername());
+					for (String user : listOfUsers) {
+						groupChat.getUsernames().add(user);
+					}
+
+					String nameOfGroupChat = UI.getName();
+					for (String user : listOfUsers) {
+						nameOfGroupChat += (", " + usernameToName.get(user));
+					}
+
+					groupChat.getNameLabel().setText(nameOfGroupChat);
+					grid.getChildren().add(groupChat.getInput());
+					grid.getChildren().add(groupChat.getOutput());
+					grid.getChildren().add(groupChat.getNameLabel());
+					chatBoxes.add(groupChat);
+				}
+				else {
+					Alert a = new Alert(AlertType.ERROR);
+					a.setHeaderText("Invalid group");
+					a.setResizable(true);
+					a.setContentText("A group with these users already exists");
+					a.showAndWait();
+				}
+
+				// If any user was not on friend's list output error
+				if (invalidUserAdded || UI.getFriendList().size() == 0) {
+					Alert a = new Alert(AlertType.ERROR);
+					a.setHeaderText("Invalid User");
+					a.setResizable(true);
+					a.setContentText("One or more username(s) were incorrect");
+					a.showAndWait();
+				}
+
+				// System.out.println("UI USER SIZE:" +
+				// UI.getFriendList().size());
+				// System.out.println("Username Array SIZE: " +
+				// usernameArr.length);
+				// System.out.println("GROUP CHAT SIZE: " +
+				// groupChat.getUsernames().size());
+
+			}
+		});
 	}
 
 	private void setUpNetwork() throws Exception {
@@ -558,21 +646,19 @@ public class ChatClient extends Application {
 				while (true) {
 					object = fromServer.readObject();
 					if (object != null) {
-						
-						
+
 						// PACKET
-						if(object instanceof Packet){
-							
-							
-							if(((Packet)object).getClientGroup().contains(UI.getUsername())){
+						if (object instanceof Packet) {
+
+							if (((Packet) object).getClientGroup().contains(UI.getUsername())) {
 								System.out.println("MESSAGE RECEIVED");
 								System.out.println("CHAT BOX SIZE: " + chatBoxes.size());
-								System.out.println("CLIENT GROUP SIZE: " + ((Packet)object).getClientGroup().size() );
+								System.out.println("CLIENT GROUP SIZE: " + ((Packet) object).getClientGroup().size());
 
-								for(int i=0; i<chatBoxes.size(); i++){
-									
-									if(chatBoxes.get(i).getUsernames().equals(((Packet)object).getClientGroup())){
-										chatBoxes.get(i).getOutput().appendText(((Packet)object).getMessage());
+								for (int i = 0; i < chatBoxes.size(); i++) {
+
+									if (chatBoxes.get(i).getUsernames().equals(((Packet) object).getClientGroup())) {
+										chatBoxes.get(i).getOutput().appendText(((Packet) object).getMessage());
 										break;
 
 									}
@@ -582,7 +668,6 @@ public class ChatClient extends Application {
 							}
 
 						}
-						
 
 						// STRING
 						if (object instanceof String) {
@@ -591,16 +676,13 @@ public class ChatClient extends Application {
 
 						// USERINFO
 						if (object instanceof UserInfo) {
-							
-							System.out.println(((UserInfo)object).getUserFlag() + "***");
-							
+
+							System.out.println(((UserInfo) object).getUserFlag() + "***");
 
 							// Username / Password Found
 							if (((UserInfo) object).getLoginFound()) {
 
 								UI = (UserInfo) object;
-								// accountFound = true;
-								wait = true;
 								System.out.println("WAIT OVER");
 
 							}
@@ -612,17 +694,14 @@ public class ChatClient extends Application {
 								System.out.println("CLIENT GET USER LIST");
 								System.out.println(allUsers.size());
 								System.out.println(allUsers.get(0).getName());
-								wait = true;
 
 							}
 
 							// Username / Password Failed
 							else {
 								System.out.println("Password Failed");
-								
+
 								UI = (UserInfo) object;
-								// accountFound = false;
-								wait = true;
 
 							}
 						}

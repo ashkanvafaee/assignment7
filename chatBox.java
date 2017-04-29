@@ -20,7 +20,6 @@ public class ChatBox {
 		return usernames;
 	}
 
-
 	private ClientObserver ID;
 
 	private int chatWidth = 300;
@@ -32,15 +31,14 @@ public class ChatBox {
 	public TextArea getOutput() {
 		return output;
 	}
-	
-	public Label getNameLabel(){
+
+	public Label getNameLabel() {
 		return nameLabel;
 	}
 
 	public ChatBox(/* ClientObserver ID */) {
 
 		this.ID = ID;
-		
 
 		// Input Text
 		input.setMaxHeight(30);
@@ -49,13 +47,10 @@ public class ChatBox {
 		input.setMinWidth(chatWidth);
 		input.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - 5);
 		input.setLayoutX(count * chatWidth + 20);
-		
-		
+
 		// Send Message Handler
 		input.setOnKeyPressed(e -> {
-			
-			
-			
+
 			if (e.getCode() == KeyCode.ENTER && !input.getText().equals("")) {
 				try {
 					Packet p = new Packet();
@@ -63,11 +58,12 @@ public class ChatBox {
 					p.setMessage(ChatClient.getName() + ": " + input.getText() + "\n");
 					input.setText("");
 					input.requestFocus();
-					
+
 					ChatClient.getToServer().writeObject(p);
 					ChatClient.getToServer().flush();
 					input.setText("");
 					input.requestFocus();
+					Sound.playSendSound();
 				} catch (Exception e2) {
 
 				}
@@ -84,13 +80,12 @@ public class ChatBox {
 		output.setEditable(false);
 		output.setLayoutX(count * chatWidth + 20);
 		output.setWrapText(true);
-		
+
 		// name label
 		nameLabel.setMaxWidth(chatWidth);
 		nameLabel.setMinWidth(chatWidth);
 		nameLabel.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - output.getMaxHeight() - 20);
-		nameLabel.setLayoutX(count*chatWidth+20);
-
+		nameLabel.setLayoutX(count * chatWidth + 20);
 
 		count++;
 
