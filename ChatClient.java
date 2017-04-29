@@ -52,7 +52,7 @@ public class ChatClient extends Application {
 
 	private ArrayList<UserInfo> allUsers = new ArrayList<>();
 
-	private int worldWidth = 1400;
+	private int worldWidth = 1600;
 	private int worldHeight = 800;
 
 	private ArrayList<Button> friendListButtons = new ArrayList<>();
@@ -388,13 +388,16 @@ public class ChatClient extends Application {
 
 							public void handle(ActionEvent event) {
 								// temp.setText(uInfo.getName());
-								ChatBox friendChatBox = new ChatBox();
-								friendChatBox.getUsernames().add(temp.getAccessibleHelp());
-								friendChatBox.getUsernames().add(UI.getUsername());
+								if (ChatBox.getCount() <= 3) {
 
-								chatBoxes.add(friendChatBox);
-								grid.getChildren().add(friendChatBox.getInput());
-								grid.getChildren().add(friendChatBox.getOutput());
+									ChatBox friendChatBox = new ChatBox();
+									friendChatBox.getUsernames().add(temp.getAccessibleHelp());
+									friendChatBox.getUsernames().add(UI.getUsername());
+
+									chatBoxes.add(friendChatBox);
+									grid.getChildren().add(friendChatBox.getInput());
+									grid.getChildren().add(friendChatBox.getOutput());
+								}
 							}
 
 						});
@@ -484,18 +487,23 @@ public class ChatClient extends Application {
 								@Override
 								public void handle(ActionEvent event) {
 
-									ChatBox cb = new ChatBox();
-									// Asscoiates usernames of both this client
-									// and the
-									// Client associated with the button to the
-									// chatbox
-									cb.getUsernames().add(b.getAccessibleHelp());
-									cb.getUsernames().add(UI.getUsername());
-									cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()) + ":");
-									grid.getChildren().add(cb.getOutput());
-									grid.getChildren().add(cb.getInput());
-									grid.getChildren().add(cb.getNameLabel());
-									chatBoxes.add(cb);
+									if (ChatBox.getCount() <= 3) {
+										ChatBox cb = new ChatBox();
+										// Asscoiates usernames of both this
+										// client
+										// and the
+										// Client associated with the button to
+										// the
+										// chatbox
+										cb.getUsernames().add(b.getAccessibleHelp());
+										cb.getUsernames().add(UI.getUsername());
+										cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()) + ":");
+										grid.getChildren().add(cb.getOutput());
+										grid.getChildren().add(cb.getInput());
+										grid.getChildren().add(cb.getNameLabel());
+										chatBoxes.add(cb);
+									}
+
 								}
 
 							});
@@ -593,7 +601,7 @@ public class ChatClient extends Application {
 				// Creates the chatbox if there is more than 1 user and there
 				// does not already exist a chatbox with the same set of users
 				listOfUsers.remove(UI.getUsername());
-				if (listOfUsers.size() > 0 && createChatBoxFlag) {
+				if (listOfUsers.size() > 0 && createChatBoxFlag && ChatBox.getCount()<=3) {
 					ChatBox groupChat = new ChatBox();
 					groupChat.getUsernames().add(UI.getUsername());
 					for (String user : listOfUsers) {

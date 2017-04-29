@@ -35,6 +35,10 @@ public class ChatBox {
 	public Label getNameLabel() {
 		return nameLabel;
 	}
+	
+	public static int getCount(){
+		return count;
+	}
 
 	public ChatBox(/* ClientObserver ID */) {
 
@@ -46,7 +50,7 @@ public class ChatBox {
 		input.setMaxWidth(chatWidth);
 		input.setMinWidth(chatWidth);
 		input.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - 5);
-		input.setLayoutX(count * chatWidth + 20);
+		input.setLayoutX(count * chatWidth + 25);
 
 		// Send Message Handler
 		input.setOnKeyPressed(e -> {
@@ -78,14 +82,14 @@ public class ChatBox {
 		output.setMaxWidth(chatWidth);
 		output.setLayoutY(new ChatClient().getWorldHeight() - output.getMaxHeight() - input.getMaxHeight() - 5);
 		output.setEditable(false);
-		output.setLayoutX(count * chatWidth + 20);
+		output.setLayoutX(count * chatWidth + 25);
 		output.setWrapText(true);
 
 		// name label
 		nameLabel.setMaxWidth(chatWidth);
 		nameLabel.setMinWidth(chatWidth);
 		nameLabel.setLayoutY(new ChatClient().getWorldHeight() - input.getMaxHeight() - output.getMaxHeight() - 20);
-		nameLabel.setLayoutX(count * chatWidth + 20);
+		nameLabel.setLayoutX(count * chatWidth + 25);
 
 		count++;
 
