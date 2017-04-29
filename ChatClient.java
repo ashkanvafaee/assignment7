@@ -28,13 +28,16 @@ import javafx.stage.Stage;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 
 public class ChatClient extends Application {
 
 	private TextArea output;
-	private static int yPos = 3;
+	private static int yPos = 4;
 
 	private static ObjectInputStream fromServer;
 	private static ObjectOutputStream toServer;
@@ -114,8 +117,13 @@ public class ChatClient extends Application {
 		Button addFriendBtn = new Button("Add Friend");
 		TextField addFriendTF = new TextField();
 
+		// Login Screen
 		Pane login = new Pane();
 		login.setStyle("-fx-background-color: white;");
+		Image loginImage = new Image("file:LoginImage.png");
+		ImageView loginImgView = new ImageView(loginImage);
+		login.getChildren().add(loginImgView);
+		loginImgView.setX(50);
 		Scene loginScene = new Scene(login, 350, 400);
 		Stage loginStage = new Stage();
 		loginStage.setScene(loginScene);
@@ -123,15 +131,22 @@ public class ChatClient extends Application {
 		// Pane to connect to server
 		Stage serverStage = new Stage();
 		Pane serverPane = new Pane();
-		Scene serverScene = new Scene(serverPane, 300, 300);
+		Scene serverScene = new Scene(serverPane, 300, 200);
 		Button serverButton = new Button("Connect");
-		serverButton.setLayoutX(200);
-		serverButton.setLayoutY(150);
+		serverButton.setLayoutX(105);
+		serverButton.setLayoutY(110);
 		TextField serverTF = new TextField();
-		serverTF.setLayoutY(150);
+		serverTF.setLayoutX(50);
+		serverTF.setLayoutY(70);
+		Text serverConnectPrompt = new Text("Connect to host server:");
+		serverConnectPrompt.setLayoutX(65);
+		serverConnectPrompt.setLayoutY(50);
 		serverPane.getChildren().add(serverButton);
 		serverPane.getChildren().add(serverTF);
+		serverPane.getChildren().add(serverConnectPrompt);
 		serverStage.setScene(serverScene);
+		serverStage.setTitle("Connect");
+
 
 		serverStage.show();
 
@@ -153,12 +168,12 @@ public class ChatClient extends Application {
 		newUser.setMaxWidth(100);
 		newUser.setMinWidth(100);
 		newUser.setLayoutX(40);
-		newUser.setLayoutY(200);
+		newUser.setLayoutY(300);
 
 		oldUser.setMaxWidth(100);
 		oldUser.setMinWidth(100);
 		oldUser.setLayoutX(195);
-		oldUser.setLayoutY(200);
+		oldUser.setLayoutY(300);
 
 		login.getChildren().add(oldUser);
 		login.getChildren().add(newUser);
@@ -203,9 +218,12 @@ public class ChatClient extends Application {
 		Scene logoutScene = new Scene(logoutPane, 350, 200);
 		logoutStage.setScene(logoutScene);
 
+		Text friendList = new Text("	      Friend's List");
+
 		scrollGrid.add(logoutBtn, 0, 0);
 		scrollGrid.add(addFriend, 0, 1);
 		scrollGrid.add(groupChatBtn, 0, 2);
+		scrollGrid.add(friendList, 0, 3);
 
 		// Add Friend Window
 		Stage addFriendStage = new Stage();
@@ -330,17 +348,6 @@ public class ChatClient extends Application {
 			}
 
 		});
-
-		EventHandler<MouseEvent> event = new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(MouseEvent event) {
-				System.out.println("asdfasdf");
-				output.appendText("asdfasdf");
-
-			}
-
-		};
 
 		// Old user submit
 		submitOld.setOnAction(new EventHandler<ActionEvent>() {
