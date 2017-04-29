@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,11 +34,7 @@ import javafx.scene.layout.*;
 public class ChatClient extends Application {
 
 	private TextArea output;
-	private TextField input;
-
 	private static int yPos = 3;
-
-	private boolean accountFound = false;
 
 	private static ObjectInputStream fromServer;
 	private static ObjectOutputStream toServer;
@@ -92,13 +89,10 @@ public class ChatClient extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		setUpNetwork();
 
 		primaryStage.setTitle("Chat Client");
 
 		Pane grid = new Pane();
-
-		// grid.setPadding(new Insets(5, 5, 5, 5));
 
 		Scene scene = new Scene(grid, worldWidth, worldHeight);
 		grid.setStyle("-fx-background-color: white;");
@@ -125,7 +119,35 @@ public class ChatClient extends Application {
 		Scene loginScene = new Scene(login, 350, 400);
 		Stage loginStage = new Stage();
 		loginStage.setScene(loginScene);
-		loginStage.show();
+
+		// Pane to connect to server
+		Stage serverStage = new Stage();
+		Pane serverPane = new Pane();
+		Scene serverScene = new Scene(serverPane, 300, 300);
+		Button serverButton = new Button("Connect");
+		serverButton.setLayoutX(200);
+		serverButton.setLayoutY(150);
+		TextField serverTF = new TextField();
+		serverTF.setLayoutY(150);
+		serverPane.getChildren().add(serverButton);
+		serverPane.getChildren().add(serverTF);
+		serverStage.setScene(serverScene);
+
+		serverStage.show();
+
+		serverButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+
+				try {
+					if (setUpNetwork(serverTF.getText())) {
+						loginStage.show();
+						serverStage.close();
+					}
+				} catch (Exception e) {
+				}
+			}
+		});
+
 		Button newUser = new Button("New User");
 		Button oldUser = new Button("Sign in");
 		newUser.setMaxWidth(100);
@@ -346,8 +368,6 @@ public class ChatClient extends Application {
 					ChatClient.name = UI.getName();
 					Sound.playWelcomeSound();
 
-					System.out.println("FRIENDLIST SIZE: " + UI.getFriendList().size());
-
 					for (UserInfo uInfo : UI.getFriendList()) {
 						Button temp = new Button(uInfo.getName());
 						temp.setMaxWidth(198);
@@ -363,10 +383,7 @@ public class ChatClient extends Application {
 								// temp.setText(uInfo.getName());
 								ChatBox friendChatBox = new ChatBox();
 								friendChatBox.getUsernames().add(temp.getAccessibleHelp());
-								System.out.println("BUTTON USERNAME: " + temp.getAccessibleHelp());
 								friendChatBox.getUsernames().add(UI.getUsername());
-
-								System.out.println("asdfasdf");
 
 								chatBoxes.add(friendChatBox);
 								grid.getChildren().add(friendChatBox.getInput());
@@ -406,8 +423,6 @@ public class ChatClient extends Application {
 					toServer.flush();
 				} catch (Exception e) {
 				}
-
-				System.out.println("WAITING NOW");
 
 				// Wait until validation received from server
 				try {
@@ -451,7 +466,6 @@ public class ChatClient extends Application {
 							flagAddYourself = true;
 							break;
 						} else {
-							System.out.println("USER FOUND");
 							Button b = new Button(addFriendTF.getText());
 							b.setMaxWidth(198);
 							b.setMinWidth(198);
@@ -462,7 +476,6 @@ public class ChatClient extends Application {
 
 								@Override
 								public void handle(ActionEvent event) {
-									System.out.println("Button Pressed");
 
 									ChatBox cb = new ChatBox();
 									// Asscoiates usernames of both this client
@@ -472,7 +485,6 @@ public class ChatClient extends Application {
 									cb.getUsernames().add(b.getAccessibleHelp());
 									cb.getUsernames().add(UI.getUsername());
 									cb.getNameLabel().setText(usernameToName.get(b.getAccessibleHelp()) + ":");
-									System.out.println("CHAT BOX ADDED");
 									grid.getChildren().add(cb.getOutput());
 									grid.getChildren().add(cb.getInput());
 									grid.getChildren().add(cb.getNameLabel());
@@ -481,9 +493,6 @@ public class ChatClient extends Application {
 
 							});
 
-							System.out.println("BUTTON NAME SHOULD BE: " + addFriendTF.getText());
-							System.out.println("BUTTON USERNAME SHOULD BE: ");
-
 							UI.getFriendList().add(0, allUsers.get(i));
 							UI.setUpdateFlag(true);
 
@@ -491,7 +500,6 @@ public class ChatClient extends Application {
 
 							flagFound = true;
 							try {
-								System.out.println("UPDATE REQUEST SENT" + UI.isUpdateFlag());
 								// Update user's friends list
 								toServer.writeObject(new UserInfo(UI));
 								toServer.flush();
@@ -595,8 +603,7 @@ public class ChatClient extends Application {
 					grid.getChildren().add(groupChat.getOutput());
 					grid.getChildren().add(groupChat.getNameLabel());
 					chatBoxes.add(groupChat);
-				}
-				else {
+				} else if (!createChatBoxFlag) {
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Invalid group");
 					a.setResizable(true);
@@ -612,30 +619,31 @@ public class ChatClient extends Application {
 					a.setContentText("One or more username(s) were incorrect");
 					a.showAndWait();
 				}
-
-				// System.out.println("UI USER SIZE:" +
-				// UI.getFriendList().size());
-				// System.out.println("Username Array SIZE: " +
-				// usernameArr.length);
-				// System.out.println("GROUP CHAT SIZE: " +
-				// groupChat.getUsernames().size());
-
 			}
 		});
 	}
 
-	private void setUpNetwork() throws Exception {
-		Socket sock = new Socket("127.0.0.1", 4242);
+	private boolean setUpNetwork(String serverIP) {
+		Socket sock;
+		try {
+			sock = new Socket(serverIP, 4242);
+			fromServer = new ObjectInputStream(sock.getInputStream());
+			toServer = new ObjectOutputStream(sock.getOutputStream());
+		} catch (Exception e) {
+			Alert a = new Alert(AlertType.ERROR);
+			a.setHeaderText("Invalid Host");
+			a.setResizable(true);
+			a.setContentText("Could not find a host with that IP address");
+			a.showAndWait();
+			return false;
+		}
 		// Socket sock = new Socket("192.168.0.12", 4242);
-
-		fromServer = new ObjectInputStream(sock.getInputStream());
-		toServer = new ObjectOutputStream(sock.getOutputStream());
 
 		System.out.println("Networking Established");
 
 		Thread t = new Thread(new IncomingReader());
 		t.start();
-
+		return true;
 	}
 
 	class IncomingReader implements Runnable {
@@ -651,9 +659,6 @@ public class ChatClient extends Application {
 						if (object instanceof Packet) {
 
 							if (((Packet) object).getClientGroup().contains(UI.getUsername())) {
-								System.out.println("MESSAGE RECEIVED");
-								System.out.println("CHAT BOX SIZE: " + chatBoxes.size());
-								System.out.println("CLIENT GROUP SIZE: " + ((Packet) object).getClientGroup().size());
 
 								for (int i = 0; i < chatBoxes.size(); i++) {
 
@@ -677,32 +682,19 @@ public class ChatClient extends Application {
 						// USERINFO
 						if (object instanceof UserInfo) {
 
-							System.out.println(((UserInfo) object).getUserFlag() + "***");
-
 							// Username / Password Found
 							if (((UserInfo) object).getLoginFound()) {
-
 								UI = (UserInfo) object;
-								System.out.println("WAIT OVER");
-
 							}
 
 							// Get list of all users
 							else if (((UserInfo) object).getUserFlag()) {
-
 								allUsers = ((UserInfo) object).getSendUsers();
-								System.out.println("CLIENT GET USER LIST");
-								System.out.println(allUsers.size());
-								System.out.println(allUsers.get(0).getName());
-
 							}
 
 							// Username / Password Failed
 							else {
-								System.out.println("Password Failed");
-
 								UI = (UserInfo) object;
-
 							}
 						}
 
@@ -715,5 +707,4 @@ public class ChatClient extends Application {
 			}
 		}
 	}
-
 }
