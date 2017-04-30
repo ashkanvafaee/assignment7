@@ -61,6 +61,8 @@ public class ChatClient extends Application {
 
 	private static String name;
 	private static UserInfo UI;
+	
+	private static String IPaddress = "";
 
 	// maps usernames to names
 	private HashMap<String, String> usernameToName = new HashMap<>();
@@ -166,8 +168,16 @@ public class ChatClient extends Application {
 		serverStage.setTitle("Connect");
 
 
-		serverStage.show();
+		if(ChatClient.IPaddress.equals("")){
+			serverStage.show();
+		}
+		else{
+			//setUpNetwork(ChatClient.IPaddress);
+			loginStage.show();
+		}
 
+		
+		
 		// Set up network handler
 		serverButton.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
@@ -175,6 +185,7 @@ public class ChatClient extends Application {
 				try {
 					if (serverTF.getText().length()!= 0 && setUpNetwork(serverTF.getText())) {
 						loginStage.show();
+						ChatClient.IPaddress = serverTF.getText();
 						serverStage.close();
 					}
 				} catch (Exception e) {
@@ -571,8 +582,15 @@ public class ChatClient extends Application {
 
 									ChatBox friendChatBox = new ChatBox();
 									friendChatBox.getNameLabel().setText(temp.getText());
-									friendChatBox.getUsernames().add(temp.getAccessibleHelp());
+									friendChatBox.getUsernames().add(temp.getAccessibleHelp());	//**
 									friendChatBox.getUsernames().add(UI.getUsername());
+									
+									System.out.println(temp.getAccessibleHelp() + "***" + UI.getUsername());
+									
+
+									
+									//temp.setAccessibleHelp(uInfo.getUsername());
+									
 
 									chatBoxes.add(friendChatBox);
 									grid.getChildren().add(friendChatBox.getInput());
@@ -645,17 +663,34 @@ public class ChatClient extends Application {
 
 				boolean flagAddYourself = false;
 				boolean flagFound = false;
+				boolean alreadyAdded = false;
+
 				for (int i = 0; i < allUsers.size(); i++) {
 
 					if (allUsers.get(i).getUsername().equals(addFriendTF.getText())) {
-						if (allUsers.get(i).getUsername().equals(ChatClient.name)) {
-							Alert a = new Alert(AlertType.ERROR);
-							a.setHeaderText("Error");
-							a.setResizable(true);
-							a.setContentText("Can't add yourself!");
-							a.showAndWait();
-							flagAddYourself = true;
-							break;
+						
+						
+						for(Button b: friendListButtons){
+							if(b.getAccessibleHelp().equals(allUsers.get(i).getUsername())){
+								alreadyAdded=true;
+							}
+						}
+						
+						
+						
+						
+						if (allUsers.get(i).getUsername().equals(UI.getUsername()) || alreadyAdded) {
+							
+							if(!alreadyAdded){
+								Alert a = new Alert(AlertType.ERROR);
+								a.setHeaderText("Error");
+								a.setResizable(true);
+								a.setContentText("Can't add yourself!");
+								a.showAndWait();
+								flagAddYourself = true;
+								break;
+							}
+						
 						} else {
 							Button b = new Button(allUsers.get(i).getName());
 							b.setMaxWidth(198);
@@ -750,7 +785,7 @@ public class ChatClient extends Application {
 					}
 				}
 
-				if (!flagAddYourself && !flagFound) {
+				if (!flagAddYourself && !flagFound && !alreadyAdded) {
 					Alert a = new Alert(AlertType.ERROR);
 					a.setHeaderText("Error");
 					a.setResizable(true);
@@ -770,10 +805,26 @@ public class ChatClient extends Application {
 		logoutYes.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent arg0) {
 				Sound.playGoodbyeSound();
-				// Sound.playWelcomeSound();
 				logoutStage.close();
 				primaryStage.close();
-				loginStage.show();
+				//loginStage.show();
+				
+				try {
+					ChatClient.yPos = 4;
+					ChatClient.name = null;
+					ChatClient.UI = null;
+					ChatClient.chatBoxes = new ArrayList<>();
+					UserInfo.setUsers(new ArrayList<UserInfo>());
+					ChatBox.setCount(0);
+					//setUpNetwork(ChatClient.IPaddress);
+								
+					
+					
+					new ChatClient().start(new Stage());
+				} catch (Exception e) {
+
+				}
+				
 			}
 		});
 
@@ -949,10 +1000,19 @@ public class ChatClient extends Application {
 
 							if (((Packet) object).getClientGroup().contains(UI.getUsername())) {
 
+								System.out.println(chatBoxes.size() + "***" );
+								System.out.println(chatBoxes.get(0).getUsernames().size() + ">>>");
+								
+								
 								for (int i = 0; i < chatBoxes.size(); i++) {
 
 									if (chatBoxes.get(i).getUsernames().equals(((Packet) object).getClientGroup())) {
 										chatBoxes.get(i).getOutput().appendText(((Packet) object).getMessage());
+										
+										if(!((Packet)object).getMessage().startsWith(ChatClient.name)){
+											Sound.playReceiveSound();
+										}
+										
 										break;
 
 									}

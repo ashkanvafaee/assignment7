@@ -36,6 +36,10 @@ public class ChatBox {
 
 	private int chatWidth = 300;
 
+	public static void setCount(int i){
+		count = i;
+	}
+	
 	public TextField getInput() {
 		return input;
 	}
@@ -72,7 +76,7 @@ public class ChatBox {
 			if (e.getCode() == KeyCode.ENTER && !input.getText().equals("")) {
 				try {
 					Packet p = new Packet();
-					p.setClientGroup(new HashSet<String>(usernames));
+					p.setClientGroup(new HashSet<String>(usernames));	
 					p.setMessage(ChatClient.getName() + ": " + input.getText() + "\n");
 					input.setText("");
 					input.requestFocus();
